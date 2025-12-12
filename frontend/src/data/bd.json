@@ -1,0 +1,287 @@
+{
+    "livros":[
+        {
+            "id": 1,
+            "titulo": "Tecnologia Digitais na Educação",
+            "autor": "Ana Beatriz Andrades",
+            "categoria": "Tecnologia",
+            "descricao": "Um estudo prático sobre como ferramentas digitais transformam o processo de ensino e aprendizagem trazendo novas possiblidades para professores e alunos.",
+            "sumario":[
+                "A evoluição das tecnologias digitais",
+                "Aprendizagem mediada por dispositivos",
+                "Ferramentas digitais para sala de aulas",
+                "Desafios da educação digital",
+                "Estratégias pedagógicas inovadoras",
+                "Futuro da educação integradas na tecnologia"
+            ],
+            "n_paginas": 198,
+            "data_publicacao": "2023-04-10",
+            "editora": "EdTech Press",
+            "capa": "/image/capa1.jpg",
+            "estado": "Disponível",
+            "extra": "popular"
+        },
+          {
+            "id": 2,
+            "titulo": "Ciência Tecnologia, Inovação no Futuro de São Carlos",
+            "autor": "São Carlos",
+            "categoria": "Tecnologia",
+            "descricao": "Uma análise profunda do impacto da ciência e da inovação no desenvolvimento global, explorando tendências que moldarão o futuro.",
+            "sumario":[
+                "O papel da ciência moderna",
+                "Inovações que mudaram o mundo",
+                "Tecnologias emergentes",
+                "Transformação digital global",
+                "Impactos sociais da inovação",
+                "O futuro da ciência e tecnologia"
+            ],
+            "n_paginas": 256,
+            "data_publicacao": "2024-01-22",
+            "editora": "FuturaTech",
+            "capa": "/image/capa2.jpg",
+            "estado": "Disponível",
+            "extra": "recente"
+        },
+         {
+            "id": 3,
+            "titulo": "Inteligência Artificial na Sala de Aula",
+            "autor": "Mariana SOusa Pinto",
+            "categoria": "Tecnologia",
+            "descricao": "Um guia acessível que demonstra como a inteligência artificial pode apoiar educaadores, personalizar o aprendizado e melhorar a experiência do estudante.",
+            "sumario":[
+                "O que é a Inteligência Artificial ?",
+                "Aplicações da IA na educação",
+                "Personalização do aprendizado",
+                "Assistentes educacionais inteligentes",
+                "Ética e Responsablidades",
+                "O futuro da IA na sala de aula"
+            ],
+            "n_paginas": 175,
+            "data_publicacao": "2025-02-05",
+            "editora": "SmartLearn",
+            "capa": "/image/capa3.jpg",
+            "estado": "Pendente",
+            "extra": "recente"
+        },
+        {
+            "id": 4,
+            "titulo": "Transformação Digital uma Jornada Possível",
+            "autor": "Ricardo Alves Monteiro",
+            "categoria": "Tecnologia",
+            "descricao": "Um livro prático que mostra como organizações de qualquer porte podem iniciar e evoluir em processos de transformação digital de forma estratégica.",
+            "sumario":[
+                "Fundamentos da transformação digital ",
+                "Mudanças culturais e organizacionais",
+                "Digitalização de processos",
+                "Novos modelos de negócio",
+                "Ferramentas indispensáveis",
+                "Construindo uma jornada sustentável"
+            ],
+            "n_paginas": 220,
+            "data_publicacao": "2022-08-14",
+            "editora": "Digital Path",
+            "capa": "/image/capa4.jpg",
+            "estado": "Disponível",
+            "extra": "popular"
+        },
+        
+        {
+            "id": 5,
+            "titulo": "Tecnologia da Informação e Comunicação",
+            "autor": "João Pedro Fernandes",
+            "categoria": "Tecnologia",
+            "descricao": "Uma introdução clara e moderna aos principais conceitos de Tecnologia da Informação e Comunicação, com aplicações no mundo real.",
+            "sumario":[
+                "Fundamentos das TICs ",
+                "Infraestruturas tecnológicas",
+                "Sistemas de comunicação",
+                "Redes e conectividade",
+                "TIC na sociedade moderna",
+                "Tendências futuras em tecnologia"
+            ],
+            "n_paginas": 240,
+            "data_publicacao": "2023-11-30",
+            "editora": "InfoTech Books",
+            "capa": "/image/capa5.jpg",
+            "estado": "Emprestado",
+            "extra": "popular"
+        },
+        
+        {
+            "id": 6,
+            "titulo": "Cultura: A Nossa História das Pinturas Rupestres",
+            "autor": "Helena M. Santos",
+            "categoria": "Cultura e História",
+            "descricao": "Uma viagem artísticas da humanidade, explorando pinturas rupestres e seus significados culturais ao longo dos séculos.",
+            "sumario":[
+                "Introdução às artes pré-históricas ",
+                "As primeiras expressões humanas",
+                "Cenários arqueológicos importantes",
+                "Interpretações e significados simbólicos",
+                "A preservação da arte rupestre",
+                "Conexões culturais contemporâneas"
+            ],
+            "n_paginas": 190,
+            "data_publicacao": "2023-03-18",
+            "editora": "Cultura Raiz",
+            "capa": "/image/capa6.jpg",
+            "estado": "Disponível",
+            "extra": "popular"
+        },
+
+        {
+            "id": 7,
+            "titulo": "Cultura e Elegância",
+            "autor": "Valéria Monteiro",
+            "categoria": "Cultura e História",
+            "descricao": "Um olhar refinado sobre como a cultura molda comportamentos elegantes, hábitos sociais e expressões de identidade ao longo do tempo.",
+            "sumario":[
+                "A evoluição da elegância ",
+                "Cultura e comportamento social",
+                "Moda, arte e estilo de vida",
+                "Espressões culturais contemporâneas",
+                "A elegância como identidade",
+                "A influência cultural global"
+            ],
+            "n_paginas": 215,
+            "data_publicacao": "2024-06-02",
+            "editora": "Artes & Cultura",
+            "capa": "/image/capa7.jpg",
+            "estado": "Pendente",
+            "extra": "recente"
+        },
+
+        {
+            "id": 8,
+            "titulo": "História e Cultura dos Povos Indígenas",
+            "autor": "Mateus Araújo",
+            "categoria": "Cultura e História",
+            "descricao": "Um estudo profundo sobre as tradições, crenças, história e sabedoria dos povos indígenas, destacando sua riqueza cultural.",
+            "sumario":[
+                "Origens dos povos indígenas",
+                "Crenças e espiritualidade",
+                "Tradições e costumes",
+                "Arte e simbolismo indígenas",
+                "Luta e preservação cultural",
+                "O futuro das culturas originárias"
+            ],
+            "n_paginas": 260,
+            "data_publicacao": "2022-11-09",
+            "editora": "Luciana Ribeiro",
+            "capa": "/image/capa8.jpg",
+            "estado": "Disponível",
+            "extra": "popular"
+        },
+        
+        {
+            "id": 9,
+            "titulo": "Amores Indígenas",
+            "autor": "Luciana Ribeiro",
+            "categoria": "Cultura e Romance",
+            "descricao": "Uma obra sensível que mistura romance ecultura indígena, revelando tradições efetiva, valores e forma de amor presente nos povos originários.",
+            "sumario":[
+                "O amor nas tradições indígenas",
+                "Histórias reais e lendárias",
+                "Rituais e símbolos afetivos",
+                "Conexão com a natureza",
+                "Casos amorosos marcantes",
+                "A beleza do amor ancestral"
+            ],
+            "n_paginas": 175,
+            "data_publicacao": "2025-01-26",
+            "editora": "Cultura Viva",
+            "capa": "/image/capa9.jpg",
+            "estado": "Reservado",
+            "extra": "recente"
+        },
+        
+        {
+            "id": 10,
+            "titulo": "Coleção Cultural",
+            "autor": "Eduardo Lima",
+            "categoria": "Cultura",
+            "descricao": "Um conjunto de reflexões sobre diferentes manifestações culturais, suas influências e sua importância na formação da identidade coletiva.",
+            "sumario":[
+                "O que é a cultura ?",
+                "Manifestações culturais ao redor do mundo",
+                "A arte como expressão cultural",
+                "Cultura e identidade social",
+                "Patrimônios culturais da humanidade",
+                "A evolução da cultura contemporânea"
+            ],
+            "n_paginas": 230,
+            "data_publicacao": "2023-08-14",
+            "editora": "Mundo Cultural",
+            "capa": "/image/capa10.jpg",
+            "estado": "Pendente",
+            "extra": "popular"
+        },
+        
+        {
+            "id": 11,
+            "titulo": "Livro de Artes Plásticas",
+            "autor": "Regina De Carvalho",
+            "categoria": "Arte",
+            "descricao": "Uma recordação do valor e a importância da arte no mundo atual, sendo que ela contribui bastante pelo desenvolvimento moderno.",
+            "sumario":[
+                "O que é a arte ?",
+                "As primeiras obras artística",
+                "A arte como expressão cultural e social",
+                "A arte em vários ramos sociais",
+                "Importância da arte",
+                "A evolução da arte no mundo moderno"
+            ],
+            "n_paginas": 233,
+            "data_publicacao": "2022-02-12",
+            "editora": "Arte Viva",
+            "capa": "/image/destaque.jpg",
+            "estado": "Disponível",
+            "extra": "destaque_master"
+        },
+        
+        {
+            "id": 12,
+            "titulo": "Livro de Ciência Aplicada",
+            "autor": "Álvaro Paulo",
+            "categoria": "Ciência",
+            "descricao": "Uma obra didática sobre a aplicação da ciência em torno do meio, estudo e evoluição do meio com aplicação da ciência.",
+            "sumario":[
+                "Fundamentos da ciência",
+                "Ciência como a base e o princípio do estudo",
+                "O envolvimento da ciência no meio",
+                "Aplicações da ciência",
+                "Ética na ciência e nas suas aplicações",
+                "A evolução da ciência e por consequência da humanidade"
+            ],
+            "n_paginas": 630,
+            "data_publicacao": "2020-02-20",
+            "editora": "Mundo Científico",
+            "capa": "/image/destaque1.jpg",
+            "estado": "Reservado",
+            "extra": "destaque"
+        },
+        
+        {
+            "id": 13,
+            "titulo": "Informática Aplicada",
+            "autor": "Cristiano De Carvalho",
+            "categoria": "Tecnologia",
+            "descricao": "Uma guia informativo da utilização e aplicação da informática em vários ramos e cenários, vantagens e proveito de uso.",
+            "sumario":[
+                "O poder da Informática",
+                "Vantagens de uso",
+                "Aplicações da informática no ramo empresarial",
+                "Informática moderna",
+                "Desenvolvimento de sistemas de gestão com a informática",
+                "A evolução da informática"
+            ],
+            "n_paginas": 210,
+            "data_publicacao": "2024-04-20",
+            "editora": "InfoTech Books",
+            "capa": "/image/evento.jpg",
+            "estado": "Disponível",
+            "extra": "evento"
+        }
+
+    ]
+}

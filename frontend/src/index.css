@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background:#F0F0F0;
+  overflow-x: hidden;
+}
+
+
+
+@layer components {
+  .nav-btn {
+    @apply border border-gray-400 px-2 py-1 rounded-md 
+      text-gray-700 transition-colors duration-200;
+  }
+
+  .nav-btn:hover {
+    @apply border-laranja-500 text-laranja-600 bg-laranja-100;
+  }
+
+  .nav-btn:active {
+    @apply border-laranja-700 text-laranja-700;
+  }
+}
+
