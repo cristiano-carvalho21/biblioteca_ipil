@@ -1,7 +1,9 @@
-import {LuClock, LuStar} from "react-icons/lu"
+import {LuStar} from "react-icons/lu"
 import CardExposicoesMaster from "../../cards/CardExposicoesMaster";
 import CardExposicoesEvento from "../../cards/CardExposicoesEvento";
 import CardExposicoes from "../../cards/CardExposicoes";
+import { FiAlertCircle, FiMapPin, FiPhone, FiStar } from "react-icons/fi";
+
 
 function Exposicoes()
 {

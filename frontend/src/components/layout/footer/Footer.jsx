@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import {AiOutlineMail} from "react-icons/ai";
-import {HiOutlineHashtag} from "react-icons/hi"
 import {LuClock} from "react-icons/lu"
+import {  FiMapPin, FiPhone } from "react-icons/fi";
 
 function Footer()
 {
     return(
-        <div className=" bg-cinza-900 text-branco-100 mt-40 h-96 grid grid-cols-3 ps-10 pt-10">
+        <div className=" bg-cinza-900 text-branco-100 mt-40 h-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ps-10 pt-10 pb-10 space-y-5">
             <article className="space-y-5">
                 <div className="flex items-center gap-2 flex-wrap">
                     <img src="/image/footer.webp" alt="IPIL" className="w-20 h-16 object-cover" />
@@ -21,7 +21,7 @@ function Footer()
  
             </article>
 
-            <article className="space-y-5  ms-5">
+            <article className="space-y-5  md:ms-20">
                 <h1 className="text-2xl">Navegação Rápida</h1>
                 <div className="flex flex-col space-y-4">
                     <Link to="/home">Home</Link>
@@ -45,7 +45,7 @@ function Footer()
                 </div>
                 <div>
                     <label className="flex items-center gap-2">
-                        <HiOutlineHashtag size={25} className="text-laranja-500"/>
+                        <FiPhone size={25} className="text-laranja-500"/>
                         <span>
                             <p className="text-lg">Telefone:</p>
                         </span>
@@ -54,7 +54,7 @@ function Footer()
                 </div>
                 <div>
                     <label className="flex items-center gap-2">
-                        <HiOutlineHashtag size={25} className="text-laranja-500"/>
+                        <FiMapPin size={25} className="text-laranja-500"/>
                         <span>
                             <p className="text-lg">Localização:</p>
                         </span>

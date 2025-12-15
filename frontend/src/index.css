@@ -13,7 +13,7 @@ body {
 
 @layer components {
   .nav-btn {
-    @apply border border-gray-400 px-2 py-1 rounded-md 
+    @apply border border-gray-400 px-2  rounded-md 
       text-gray-700 transition-colors duration-200;
   }
 
@@ -26,3 +26,23 @@ body {
   }
 }
 
+@layer components {
+  .badge {
+    @apply absolute top-2 right-4 bg-branco-100  text-sm px-2 py-1 rounded-full shadow flex items-center gap-2;
+  }
+
+  /* Verde (disponível / reservado) */
+  .badge-disponivel {
+    @apply bg-green-100 text-green-700;
+  }
+
+  /* Vermelho (emprestado) */
+  .badge-emprestado {
+    @apply bg-red-100 text-red-700;
+  }
+
+  /* Laranja (pendente) */
+  .badge-pendente {
+    @apply bg-orange-100 text-orange-700;
+  }
+}

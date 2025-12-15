@@ -1,17 +1,28 @@
-import livrosData from "../../data/bd.json"
+import {livros} from "../../data/bd.json"
 import {MdPersonOutline} from "react-icons/md"
 import {IoCalendarClearOutline} from "react-icons/io5"
+import BadgeLivro from "../tags/badges/BadgeLivro";
 
-function CardLivro()
+
+function CardLivro({tipo})
 {
-    const livros = livrosData.livros;
+
+    const livrosFiltrados = tipo ? livros.filter(
+            livro => livro.extra === tipo ) : livros;
 
     return(
-        <div className="w-64 h-65">
-            {livros.map(livro => (
-                <div key={livro.id} className="bg-branco-100">
-                    <img src={livro.capa} alt="Imagem" className="w-full h-45 object-cover rounded-md relative" loading="lazy" />
-                    <span className="absolute top-1 right-8 bg-branco-100  text-xs px-2 py-1 rounded-full shadow"> {livro.estado} </span>
+        <div className="w-full h-65 grid grid-cols-1 gap-5 p-4 bg-branco-100
+                    sm:grid-cols-2
+                    md:grid-cols-3
+                    lg:grid-cols-4
+                    xl:grid cols-5
+                    
+                ">
+            { livrosFiltrados.length > 0 ? (
+                livrosFiltrados.map(livro => (
+                <div key={livro.id} className="w-64 h-45 relative bg-branco-100 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg cursor-pointer">
+                    <img src={livro.capa} alt="Imagem" className="w-64 h-45 object-cover rounded-md " />
+                    <BadgeLivro estado={livro.estado}/>
 
                     <div className="mt-5">
                         <p className="ms-5"> {livro.titulo} </p>
@@ -20,7 +31,12 @@ function CardLivro()
                         <button className="bg-laranja-500 text-branco-100 w-full mt-3 p-2 rounded-lg">Ver Detalhes</button>
                     </div>
                 </div>
-            ))}
+                ))
+            ) : (
+                <p>Nenhum livro encontrado</p>
+            
+            
+            )}
 
         </div>
     );

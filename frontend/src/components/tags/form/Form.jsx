@@ -1,12 +1,12 @@
 import React from "react";
 import InputGroup from "./inputs/InputGroup";
 
-function Form()
+function Form({onPesquisar})
 {
     return(
         <div>
             <form action="">
-                <InputGroup type="text" placeholder="Busca por título, autor ou categória" />
+                <InputGroup type="text" placeholder="Busca por título, autor ou categória" onPesquisar={onPesquisar}/>
             </form>
         </div>
     );
