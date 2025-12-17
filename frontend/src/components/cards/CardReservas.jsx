@@ -1,32 +1,26 @@
 import livrosData from "../../data/bd.json"
+import BtnStatus from "../tags/btns/BtnStatus";
 import {LuClock} from "react-icons/lu"
 import {IoCalendarClearOutline} from "react-icons/io5"
 
-function CardReservas()
+function CardReservas({estado})
 {
     const livrosReservado = livrosData.livros.filter(
-            livro => livro.estado === "Pendente"
+            livro => livro.estado === estado
         );
 
     return(
         
-        <div className=" max-w-5xl  h-72">
+        <div className="w-full  h-full">
             {livrosReservado.map(livro =>(
-                <div key={livro.id} className="bg-branco-100 flex gap-10 mb-20">
+                <div key={livro.id} className="bg-branco-100 flex gap-10 mb-20 h-72">
                     <article>
                         <img src={livro.capa} alt="Imagem" className="w-48 h-full  rounded-md " loading="lazy" />
                     </article>
-    
                     <article>
                         <p className="mt-2 text-lg "> {livro.titulo} </p>
                         <p className="text-cinza-900 mt-2"> {livro.autor} </p>
-                        <button className="bg-laranja-100 text-laranja-500 p-3 flex px-6 mt-5 mb-5" > 
-                            <LuClock size={35}/> 
-                            <div>
-                                <p className="pe-10"> {livro.estado} </p>
-                                <p className="text-sm ps-2">Aguardando disponiblidade</p>
-                            </div>
-                        </button>
+                        <BtnStatus estado={livro.estado} label={livro.label}/>
 
                         <div className="flex justify-between space-x-40 gap-40">
 

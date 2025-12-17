@@ -46,3 +46,46 @@ body {
     @apply bg-orange-100 text-orange-700;
   }
 }
+
+@layer components {
+  .btnStatus{
+    @apply p-3 flex px-6 mt-5 mb-5 rounded-lg items-center gap-2;
+  }
+  .btnStatus-pendente{
+    @apply bg-orange-100 text-orange-700 border border-orange-700;
+  }
+  .btnStatus-reservado{
+    @apply bg-green-100 text-green-700 border border-green-700;
+  }
+  .btnStatus-emprestado{
+    @apply bg-red-100 text-red-700 border border-red-700;
+  }
+}
+
+@layer components {
+  .minBtnStatus{
+    @apply p-1 flex  mb-2 rounded-lg items-center gap-2;
+  }
+  .minBtnStatus-pendente{
+    @apply bg-orange-100 text-orange-700 border border-orange-700;
+  }
+  .minBtnStatus-reservado{
+    @apply bg-green-100 text-green-700 border border-green-700;
+  }
+  .minBtnStatus-emprestado{
+    @apply bg-red-100 text-red-700 border border-red-700;
+  }
+}
+
+@layer components{
+  .badgeExpo{
+    @apply flex items-center top-5 left-8 absolute bg-branco-50 px-6 py-2 rounded-2xl;
+  }
+  .badgeExpo-evento{
+    @apply text-blue-500 font-bold;
+  }
+  .badgeExpo-destaque{
+    @apply text-laranja-500 font-bold;
+  }
+  
+}

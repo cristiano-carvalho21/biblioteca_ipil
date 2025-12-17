@@ -1,24 +1,16 @@
 import CardReservas from "../../cards/CardReservas";
+import WelcomeReservas from "./WelcomeReservas";
 
 function Reservas()
 {
     return(
-        <main className="mt-20 mb-20 bg-branco-100 p-5 h-screen">
-
+        <main className="mt-20 mb-20 bg-branco-100 p-5 h-full">
             <section className="ms-10">
-                <article>
-                    <h1 className="text-3xl mb-3">Minhas Reservas</h1>
-                    <p className="text-cinza-900">Gerencie suas reservas e empréstimos</p>
-                </article>
-                <article className="mt-10 mb-10">
-                    <p>Reservas Ativas</p>
-                </article>
+                <WelcomeReservas/>
             </section>
-                
             <section className="ms-20">
-                <article>
-                    <CardReservas/>
-                </article>
+                    <CardReservas estado="Pendente"/>
+                    <CardReservas estado="Reservado"/>
             </section>
 
             {/*

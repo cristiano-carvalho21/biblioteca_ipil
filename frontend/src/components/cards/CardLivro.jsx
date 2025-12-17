@@ -2,6 +2,7 @@ import {livros} from "../../data/bd.json"
 import {MdPersonOutline} from "react-icons/md"
 import {IoCalendarClearOutline} from "react-icons/io5"
 import BadgeLivro from "../tags/badges/BadgeLivro";
+import { Link } from "react-router-dom";
 
 
 function CardLivro({tipo})
@@ -27,8 +28,8 @@ function CardLivro({tipo})
                     <div className="mt-5">
                         <p className="ms-5"> {livro.titulo} </p>
                         <p className="flex gap-2 mt-2 ms-3 items-center"> <MdPersonOutline size={30} /> {livro.autor} </p>
-                        <p className="flex gap-2 mt-2 ms-3 items-center"> <IoCalendarClearOutline size={30} /> {livro.data_publicacao} - {livro.categoria} </p>
-                        <button className="bg-laranja-500 text-branco-100 w-full mt-3 p-2 rounded-lg">Ver Detalhes</button>
+                        <p className="flex gap-2 mt-2 ms-3 items-center mb-5"> <IoCalendarClearOutline size={30} /> {livro.data_publicacao} - {livro.categoria} </p>
+                        <Link  to={`/livros/${livro.id}`} className="bg-laranja-500 text-branco-100 w-full flex text-center justify-center p-2 rounded-lg">Ver Detalhes</Link>
                     </div>
                 </div>
                 ))

@@ -7,6 +7,7 @@ import Reservas from "./components/pages/reservas/Reservas.jsx"
 import Exposicoes from "./components/pages/exposicoes/Exposicoes.jsx"
 import MeuPerfil from "./components/pages/meuperfil/MeuPerfil.jsx"
 import Institucional from "./components/pages/institucional/Institucional.jsx"
+import Detalhes from "./components/extra/Detalhes.jsx"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 function App() {
@@ -34,6 +35,9 @@ function App() {
             />
             <Route path="/institucional"
             element={<Institucional/>}
+            />
+            <Route path = "/livros/:id"
+              element={<Detalhes/>}
             />
           </Routes>
           

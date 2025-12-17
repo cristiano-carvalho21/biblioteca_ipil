@@ -2,8 +2,9 @@ import { FiSettings } from "react-icons/fi";
 
 function CardConfiguracoes()
 {
+
     return(
-        <main className="h-screen">
+        <main className="h-screen ms-5">
             <section className="flex items-center gap-5 ">
                 <FiSettings size={30} className="text-laranja-500 ms-5"/> <h1 className="text-2xl">Configurações da Conta</h1>
             </section>

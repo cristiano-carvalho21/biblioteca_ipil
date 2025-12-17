@@ -1,3 +1,4 @@
+import {livros} from "../../data/bd.json"
 import {MdPersonOutline} from "react-icons/md"
 import {AiOutlineMail} from "react-icons/ai";
 import {HiOutlineHashtag, HiOutlineLogout} from "react-icons/hi"
@@ -6,6 +7,12 @@ import { LuFilePen } from "react-icons/lu";
 
 function CardMeuPerfil()
 {
+    const livrosEmprestados = livros.filter(livro => livro.estado === "Emprestado");
+    const qtdLivrosEmprestados = livrosEmprestados.length;
+
+    const livrosReservados = livros.filter(livro => livro.estado === "Reservado" || livro.estado === "Pendente");
+    const qtdLivrosReservados = livrosReservados.length;
+
     return(
         <main className="max-w-md h-screen">
             <section>
@@ -29,11 +36,11 @@ function CardMeuPerfil()
                 </article>
                 <article className="flex justify-between space-x-2">
                     <div className="flex flex-col bg-laranja-100 text-laranja-500 py-5 px-10 rounded-lg">
-                        <label className="text-center">1</label> 
+                        <label className="text-center"> {qtdLivrosEmprestados} </label> 
                         <label>Emprestado</label>
                     </div>
                     <div className="flex flex-col bg-laranja-100 text-laranja-500 py-5 px-10 rounded-lg">
-                        <label className="text-center">1</label>
+                        <label className="text-center"> {qtdLivrosReservados} </label>
                         <label>Reservado</label>
                     </div>
                 </article>

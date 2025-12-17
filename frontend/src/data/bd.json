@@ -19,7 +19,8 @@
             "editora": "EdTech Press",
             "capa": "/image/capa1.jpg",
             "estado": "Disponível",
-            "extra": "popular"
+            "extra": "popular",
+            "label": "Este livro esta disponível para reserva"
         },
           {
             "id": 2,
@@ -40,12 +41,13 @@
             "editora": "FuturaTech",
             "capa": "/image/capa2.jpg",
             "estado": "Disponível",
-            "extra": "recente"
+            "extra": "recente",
+            "label": "Este livro esta disponível para reserva"
         },
          {
             "id": 3,
             "titulo": "Inteligência Artificial na Sala de Aula",
-            "autor": "Mariana SOusa Pinto",
+            "autor": "Mariana Sousa Pinto",
             "categoria": "Tecnologia",
             "descricao": "Um guia acessível que demonstra como a inteligência artificial pode apoiar educaadores, personalizar o aprendizado e melhorar a experiência do estudante.",
             "sumario":[
@@ -61,7 +63,8 @@
             "editora": "SmartLearn",
             "capa": "/image/capa3.jpg",
             "estado": "Pendente",
-            "extra": "recente"
+            "extra": "recente",
+            "label": "Aguardando disponiblidade"
         },
         {
             "id": 4,
@@ -82,7 +85,8 @@
             "editora": "Digital Path",
             "capa": "/image/capa4.jpg",
             "estado": "Disponível",
-            "extra": "popular"
+            "extra": "popular",
+            "label": "Este livro esta disponível para reserva"
         },
         
         {
@@ -104,7 +108,9 @@
             "editora": "InfoTech Books",
             "capa": "/image/capa5.jpg",
             "estado": "Emprestado",
-            "extra": "popular"
+            "extra": "popular",
+            "criterio": "Devolução em 17/06/2026",
+            "label": "Este livro está em sua posse, no tempo determinado por favor faça a devolução"
         },
         
         {
@@ -126,7 +132,8 @@
             "editora": "Cultura Raiz",
             "capa": "/image/capa6.jpg",
             "estado": "Disponível",
-            "extra": "popular"
+            "extra": "popular",
+            "label": "Este livro esta disponível para reserva"
         },
 
         {
@@ -148,7 +155,8 @@
             "editora": "Artes & Cultura",
             "capa": "/image/capa7.jpg",
             "estado": "Pendente",
-            "extra": "recente"
+            "extra": "recente",
+            "label": "Aguardando disponiblidade"
         },
 
         {
@@ -169,8 +177,9 @@
             "data_publicacao": "2022-11-09",
             "editora": "Luciana Ribeiro",
             "capa": "/image/capa8.jpg",
-            "estado": "Disponível",
-            "extra": "popular"
+            "estado": "Reservado",
+            "extra": "popular",
+            "label": "Retire na biblioteca"
         },
         
         {
@@ -192,7 +201,8 @@
             "editora": "Cultura Viva",
             "capa": "/image/capa9.jpg",
             "estado": "Reservado",
-            "extra": "recente"
+            "extra": "recente",
+            "label": "Retire na biblioteca"
         },
         
         {
@@ -214,73 +224,51 @@
             "editora": "Mundo Cultural",
             "capa": "/image/capa10.jpg",
             "estado": "Pendente",
-            "extra": "popular"
-        },
+            "extra": "popular",
+            "label": "Aguardando disponiblidade"
+            
+        }
         
+        
+    ],
+    "eventos": [
         {
-            "id": 11,
+            "id": 1,
             "titulo": "Livro de Artes Plásticas",
-            "autor": "Regina De Carvalho",
             "categoria": "Arte",
-            "descricao": "Uma recordação do valor e a importância da arte no mundo atual, sendo que ela contribui bastante pelo desenvolvimento moderno.",
-            "sumario":[
-                "O que é a arte ?",
-                "As primeiras obras artística",
-                "A arte como expressão cultural e social",
-                "A arte em vários ramos sociais",
-                "Importância da arte",
-                "A evolução da arte no mundo moderno"
-            ],
-            "n_paginas": 233,
-            "data_publicacao": "2022-02-12",
-            "editora": "Arte Viva",
-            "capa": "/image/destaque.jpg",
-            "estado": "Disponível",
-            "extra": "destaque_master"
-        },
-        
+            "extra": "destaque_master",
+            "estado": "Em destaque",
+            "label": "Novos livros",
+            "descricao": "Explore os lançamentos mais recentes sobre Artes Plásticas e Modernas.",
+            "data": "06 de Junho de 2026",
+            "capa":"/image/destaque.jpg",
+            "local": "Sala 82 - 2º andar"
+        }, 
+          
         {
-            "id": 12,
-            "titulo": "Livro de Ciência Aplicada",
-            "autor": "Álvaro Paulo",
-            "categoria": "Ciência",
-            "descricao": "Uma obra didática sobre a aplicação da ciência em torno do meio, estudo e evoluição do meio com aplicação da ciência.",
-            "sumario":[
-                "Fundamentos da ciência",
-                "Ciência como a base e o princípio do estudo",
-                "O envolvimento da ciência no meio",
-                "Aplicações da ciência",
-                "Ética na ciência e nas suas aplicações",
-                "A evolução da ciência e por consequência da humanidade"
-            ],
-            "n_paginas": 630,
-            "data_publicacao": "2020-02-20",
-            "editora": "Mundo Científico",
-            "capa": "/image/destaque1.jpg",
-            "estado": "Reservado",
-            "extra": "destaque"
-        },
-        
-        {
-            "id": 13,
-            "titulo": "Informática Aplicada",
-            "autor": "Cristiano De Carvalho",
-            "categoria": "Tecnologia",
-            "descricao": "Uma guia informativo da utilização e aplicação da informática em vários ramos e cenários, vantagens e proveito de uso.",
-            "sumario":[
-                "O poder da Informática",
-                "Vantagens de uso",
-                "Aplicações da informática no ramo empresarial",
-                "Informática moderna",
-                "Desenvolvimento de sistemas de gestão com a informática",
-                "A evolução da informática"
-            ],
-            "n_paginas": 210,
-            "data_publicacao": "2024-04-20",
-            "editora": "InfoTech Books",
+            "id": 2,
+            "titulo": "Semana Louca: Desafios e Exercícios",
+            "categoria": "",
+            "descricao": "Semana de desafios e exercícios com prémios e certificações",
             "capa": "/image/evento.jpg",
-            "estado": "Disponível",
-            "extra": "evento"
+            "estado": "Evento",
+            "extra": "destaque",
+            "label": "",
+            "data": "21 de Junho de 2026",
+            "local":"Sala 72 - 2º andar"
+        },
+        
+        {
+            "id": 3,
+            "titulo": "Livros em destque: Ciência",
+            "categoria": "Ciência",
+            "descricao": "Seleção especial de livros de química, física, matemática, informática",
+            "capa": "/image/destaque1.jpg",
+            "estado": "Destaque",
+            "extra": "destaque",
+            "label": "",
+            "data": "29 de Junho de 2026",
+            "local":"Sala 79 - 2º andar"
         }
 
     ]

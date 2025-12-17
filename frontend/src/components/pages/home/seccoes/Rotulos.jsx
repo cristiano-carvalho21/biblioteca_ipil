@@ -10,7 +10,7 @@ function Rotulos()
                 <div className="flex gap-2 p-7 rounded-lg bg-branco-100">
                     <button className="bg-laranja-100 text-laranja-500 p-3 rounded-lg"> {dado.icone} </button>
                     <span>
-                    <p className="text-lg">6</p>
+                    <p className="text-lg">{dado.valor}</p>
                     <p> {dado.label} </p>
                     </span>
                 </div>
