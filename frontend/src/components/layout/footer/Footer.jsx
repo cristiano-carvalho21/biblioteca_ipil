@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import {AiOutlineMail} from "react-icons/ai";
-import {LuClock} from "react-icons/lu"
-import {  FiMapPin, FiPhone } from "react-icons/fi";
+import { rotas } from "../Rotas";
+import { info } from "../Info";
 
 function Footer()
 {
@@ -24,54 +23,26 @@ function Footer()
             <article className="space-y-5  md:ms-20">
                 <h1 className="text-2xl">Navegação Rápida</h1>
                 <div className="flex flex-col space-y-4">
-                    <Link to="/home">Home</Link>
-                    <Link to="/catalogo">Catálogo</Link>
-                    <Link to="/reservas">Reservas</Link>
-                    <Link to="/exposicoes">Exposições</Link>
-                    <Link to="/institucional">Institucional</Link>
+                    {rotas.map(rota => (
+                        <Link to={rota.rota}>{rota.label}</Link>
+                    ))}
                 </div>
             </article>
 
             <article className="space-y-5">
                 <h1 className="text-2xl">Contactos</h1>
+                {info.map(inf => (
                 <div>
                     <label className="flex items-center  gap-2">
-                        <AiOutlineMail size={25} className="text-laranja-500"/>
+                        {inf.icone}
                         <span>
-                            <p className="text-lg">Email:</p>
+                            <p className="text-lg"> {inf.label} </p>
                         </span>
                     </label>
-                    <p className="text-sm ms-9">biblioteca@ipil.ao</p>
+                    <p className="text-sm ms-9"> {inf.info} </p>
                 </div>
-                <div>
-                    <label className="flex items-center gap-2">
-                        <FiPhone size={25} className="text-laranja-500"/>
-                        <span>
-                            <p className="text-lg">Telefone:</p>
-                        </span>
-                    </label>
-                    <p className="text-sm ms-9">974107262</p>
-                </div>
-                <div>
-                    <label className="flex items-center gap-2">
-                        <FiMapPin size={25} className="text-laranja-500"/>
-                        <span>
-                            <p className="text-lg">Localização:</p>
-                        </span>
-                    </label>    
-                    <p className="text-sm ms-9">Istituto Politécnico Industrial de Luanda</p>
-                </div>
-                <div>
-                    <label className="flex items-center gap-2">
-                        <LuClock size={25} className="text-laranja-500"/>
-                        <span>
-                            <p className="text-lg">Horário de Atendimento:</p>
-                        </span>
-                    </label>
-                    <p className="text-sm ms-9">Segunda à Sexta: 08h00 - 18h00 <br />
-                            Sábado: 08h00 - 13h00
-                    </p>
-                </div>
+                ))}
+
             </article>
         </div>
     );

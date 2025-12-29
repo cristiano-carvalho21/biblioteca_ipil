@@ -14,10 +14,10 @@ function CardMeuPerfil()
     const qtdLivrosReservados = livrosReservados.length;
 
     return(
-        <main className="max-w-md h-screen">
-            <section>
-                <article className="bg-laranja-500 h-32  relative rounded-t-2xl"></article>
-                <button className="w-24 h-24 rounded-full mt-20 ms-5 absolute top-40 flex items-center justify-center bg-branco-50 text-laranja-500"><MdPersonOutline size={70} /></button>
+        <main className="md:max-w-md h-screen sm:max-w-full">
+            <section className="relative h-auto">
+                <article className="bg-laranja-500 h-32  relative w-full rounded-t-2xl"></article>
+                <button className="w-24 h-24 rounded-full  absolute left-4 top-4/4 -translate-y-1/2 aspect-square flex items-center justify-center bg-branco-50 text-laranja-500"><MdPersonOutline size={70} /></button>
             </section>
             <div className="w-full  border border-t-0 border-cinza-500 rounded-b-2xl bg-branco-100">
                 

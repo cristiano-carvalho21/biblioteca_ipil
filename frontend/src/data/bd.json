@@ -7,11 +7,11 @@
             "categoria": "Tecnologia",
             "descricao": "Um estudo prático sobre como ferramentas digitais transformam o processo de ensino e aprendizagem trazendo novas possiblidades para professores e alunos.",
             "sumario":[
-                "A evoluição das tecnologias digitais",
-                "Aprendizagem mediada por dispositivos",
-                "Ferramentas digitais para sala de aulas",
-                "Desafios da educação digital",
-                "Estratégias pedagógicas inovadoras",
+                "A evoluição das tecnologias digitais; ",
+                "Aprendizagem mediada por dispositivos; ",
+                "Ferramentas digitais para sala de aulas; ",
+                "Desafios da educação digital; ",
+                "Estratégias pedagógicas inovadoras; ",
                 "Futuro da educação integradas na tecnologia"
             ],
             "n_paginas": 198,
@@ -20,7 +20,8 @@
             "capa": "/image/capa1.jpg",
             "estado": "Disponível",
             "extra": "popular",
-            "label": "Este livro esta disponível para reserva"
+            "label": "Este livro esta disponível para reserva",
+            "isbn": "321-0987654321"
         },
           {
             "id": 2,
@@ -29,11 +30,11 @@
             "categoria": "Tecnologia",
             "descricao": "Uma análise profunda do impacto da ciência e da inovação no desenvolvimento global, explorando tendências que moldarão o futuro.",
             "sumario":[
-                "O papel da ciência moderna",
-                "Inovações que mudaram o mundo",
-                "Tecnologias emergentes",
-                "Transformação digital global",
-                "Impactos sociais da inovação",
+                "O papel da ciência moderna; ",
+                "Inovações que mudaram o mundo; ",
+                "Tecnologias emergentes; ",
+                "Transformação digital global; ",
+                "Impactos sociais da inovação; ",
                 "O futuro da ciência e tecnologia"
             ],
             "n_paginas": 256,
@@ -42,7 +43,8 @@
             "capa": "/image/capa2.jpg",
             "estado": "Disponível",
             "extra": "recente",
-            "label": "Este livro esta disponível para reserva"
+            "label": "Este livro esta disponível para reserva",
+            "isbn": "321-0987600321"
         },
          {
             "id": 3,
@@ -51,11 +53,11 @@
             "categoria": "Tecnologia",
             "descricao": "Um guia acessível que demonstra como a inteligência artificial pode apoiar educaadores, personalizar o aprendizado e melhorar a experiência do estudante.",
             "sumario":[
-                "O que é a Inteligência Artificial ?",
-                "Aplicações da IA na educação",
-                "Personalização do aprendizado",
-                "Assistentes educacionais inteligentes",
-                "Ética e Responsablidades",
+                "O que é a Inteligência Artificial ?;  ",
+                "Aplicações da IA na educação;  ",
+                "Personalização do aprendizado;  ",
+                "Assistentes educacionais inteligentes;  ",
+                "Ética e Responsablidades;  ",
                 "O futuro da IA na sala de aula"
             ],
             "n_paginas": 175,
@@ -64,7 +66,8 @@
             "capa": "/image/capa3.jpg",
             "estado": "Pendente",
             "extra": "recente",
-            "label": "Aguardando disponiblidade"
+            "label": "Aguardando disponiblidade",
+            "isbn": "321-0911654321"
         },
         {
             "id": 4,
@@ -73,11 +76,11 @@
             "categoria": "Tecnologia",
             "descricao": "Um livro prático que mostra como organizações de qualquer porte podem iniciar e evoluir em processos de transformação digital de forma estratégica.",
             "sumario":[
-                "Fundamentos da transformação digital ",
-                "Mudanças culturais e organizacionais",
-                "Digitalização de processos",
-                "Novos modelos de negócio",
-                "Ferramentas indispensáveis",
+                "Fundamentos da transformação digital; ",
+                "Mudanças culturais e organizacionais; ",
+                "Digitalização de processos; ",
+                "Novos modelos de negócio; ",
+                "Ferramentas indispensáveis; ",
                 "Construindo uma jornada sustentável"
             ],
             "n_paginas": 220,
@@ -86,7 +89,8 @@
             "capa": "/image/capa4.jpg",
             "estado": "Disponível",
             "extra": "popular",
-            "label": "Este livro esta disponível para reserva"
+            "label": "Este livro esta disponível para reserva",
+            "isbn": "321-0987884321"
         },
         
         {
@@ -96,11 +100,11 @@
             "categoria": "Tecnologia",
             "descricao": "Uma introdução clara e moderna aos principais conceitos de Tecnologia da Informação e Comunicação, com aplicações no mundo real.",
             "sumario":[
-                "Fundamentos das TICs ",
-                "Infraestruturas tecnológicas",
-                "Sistemas de comunicação",
-                "Redes e conectividade",
-                "TIC na sociedade moderna",
+                "Fundamentos das TICs; ",
+                "Infraestruturas tecnológicas; ",
+                "Sistemas de comunicação; ",
+                "Redes e conectivida; ",
+                "TIC na sociedade moderna; ",
                 "Tendências futuras em tecnologia"
             ],
             "n_paginas": 240,
@@ -110,7 +114,8 @@
             "estado": "Emprestado",
             "extra": "popular",
             "criterio": "Devolução em 17/06/2026",
-            "label": "Este livro está em sua posse, no tempo determinado por favor faça a devolução"
+            "label": "Este livro está em sua posse, no tempo determinado por favor faça a devolução",
+            "isbn": "321-0987224321"
         },
         
         {
@@ -120,11 +125,11 @@
             "categoria": "Cultura e História",
             "descricao": "Uma viagem artísticas da humanidade, explorando pinturas rupestres e seus significados culturais ao longo dos séculos.",
             "sumario":[
-                "Introdução às artes pré-históricas ",
-                "As primeiras expressões humanas",
-                "Cenários arqueológicos importantes",
-                "Interpretações e significados simbólicos",
-                "A preservação da arte rupestre",
+                "Introdução às artes pré-históricas; ",
+                "As primeiras expressões humanas;  ",
+                "Cenários arqueológicos importantes;  ",
+                "Interpretações e significados simbólicos;  ",
+                "A preservação da arte rupestre;  ",
                 "Conexões culturais contemporâneas"
             ],
             "n_paginas": 190,
@@ -133,7 +138,8 @@
             "capa": "/image/capa6.jpg",
             "estado": "Disponível",
             "extra": "popular",
-            "label": "Este livro esta disponível para reserva"
+            "label": "Este livro esta disponível para reserva",
+            "isbn": "321-0983354321"
         },
 
         {
@@ -143,11 +149,11 @@
             "categoria": "Cultura e História",
             "descricao": "Um olhar refinado sobre como a cultura molda comportamentos elegantes, hábitos sociais e expressões de identidade ao longo do tempo.",
             "sumario":[
-                "A evoluição da elegância ",
-                "Cultura e comportamento social",
-                "Moda, arte e estilo de vida",
-                "Espressões culturais contemporâneas",
-                "A elegância como identidade",
+                "A evoluição da elegância; ",
+                "Cultura e comportamento socia;l ",
+                "Moda, arte e estilo de vida; ",
+                "Espressões culturais contemporâneas; ",
+                "A elegância como identidade; ",
                 "A influência cultural global"
             ],
             "n_paginas": 215,
@@ -156,7 +162,8 @@
             "capa": "/image/capa7.jpg",
             "estado": "Pendente",
             "extra": "recente",
-            "label": "Aguardando disponiblidade"
+            "label": "Aguardando disponiblidade",
+            "isbn": "321-0987644321"
         },
 
         {
@@ -166,11 +173,11 @@
             "categoria": "Cultura e História",
             "descricao": "Um estudo profundo sobre as tradições, crenças, história e sabedoria dos povos indígenas, destacando sua riqueza cultural.",
             "sumario":[
-                "Origens dos povos indígenas",
-                "Crenças e espiritualidade",
-                "Tradições e costumes",
-                "Arte e simbolismo indígenas",
-                "Luta e preservação cultural",
+                "Origens dos povos indígenas; ",
+                "Crenças e espiritualidade; ",
+                "Tradições e costumes; ",
+                "Arte e simbolismo indígenas; ",
+                "Luta e preservação cultural; ",
                 "O futuro das culturas originárias"
             ],
             "n_paginas": 260,
@@ -178,8 +185,9 @@
             "editora": "Luciana Ribeiro",
             "capa": "/image/capa8.jpg",
             "estado": "Reservado",
-            "extra": "popular",
-            "label": "Retire na biblioteca"
+            "extra": "",
+            "label": "Retire na biblioteca",
+            "isbn": "321-0987554321"
         },
         
         {
@@ -189,11 +197,11 @@
             "categoria": "Cultura e Romance",
             "descricao": "Uma obra sensível que mistura romance ecultura indígena, revelando tradições efetiva, valores e forma de amor presente nos povos originários.",
             "sumario":[
-                "O amor nas tradições indígenas",
-                "Histórias reais e lendárias",
-                "Rituais e símbolos afetivos",
-                "Conexão com a natureza",
-                "Casos amorosos marcantes",
+                "O amor nas tradições indígenas;  ",
+                "Histórias reais e lendárias;  ",
+                "Rituais e símbolos afetivos;  ",
+                "Conexão com a natureza;  ",
+                "Casos amorosos marcantes;  ",
                 "A beleza do amor ancestral"
             ],
             "n_paginas": 175,
@@ -202,7 +210,8 @@
             "capa": "/image/capa9.jpg",
             "estado": "Reservado",
             "extra": "recente",
-            "label": "Retire na biblioteca"
+            "label": "Retire na biblioteca",
+            "isbn": "321-0987664321"
         },
         
         {
@@ -212,11 +221,11 @@
             "categoria": "Cultura",
             "descricao": "Um conjunto de reflexões sobre diferentes manifestações culturais, suas influências e sua importância na formação da identidade coletiva.",
             "sumario":[
-                "O que é a cultura ?",
-                "Manifestações culturais ao redor do mundo",
-                "A arte como expressão cultural",
-                "Cultura e identidade social",
-                "Patrimônios culturais da humanidade",
+                "O que é a cultura ?; ",
+                "Manifestações culturais ao redor do mundo; ",
+                "A arte como expressão cultural; ",
+                "Cultura e identidade social; ",
+                "Patrimônios culturais da humanidade; ",
                 "A evolução da cultura contemporânea"
             ],
             "n_paginas": 230,
@@ -224,8 +233,9 @@
             "editora": "Mundo Cultural",
             "capa": "/image/capa10.jpg",
             "estado": "Pendente",
-            "extra": "popular",
-            "label": "Aguardando disponiblidade"
+            "extra": "",
+            "label": "Aguardando disponiblidade",
+            "isbn": "321-0987754321"
             
         }
         
@@ -271,5 +281,214 @@
             "local":"Sala 79 - 2º andar"
         }
 
+    ],
+    "emprestimos": [
+        {
+            "id": 1,
+            "livro": "Cultura e Elegância",
+            "estudante": "Celso Huma",
+            "data_emprestimo": "12/04/2026",
+            "data_vencimento": "24/04/2026",
+            "estado": "Atrasado",
+            "accoes": "Devolvido"
+        },
+        {
+            "id": 2,
+            "livro": "Tecnologia Digitais na Educação",
+            "estudante": "Gabriel Daniel Tacanho",
+            "data_emprestimo": "10/03/2026",
+            "data_vencimento": "20/03/2026",
+            "estado": "Atrasado",
+            "accoes": "Pendente"
+        },
+        {
+            "id": 3,
+            "livro": "Amores Indígenas",
+            "estudante": "Martine Ruth Carvalho",
+            "data_emprestimo": "10/04/2026",
+            "data_vencimento": "20/04/2026",
+            "estado": "Ativo",
+            "accoes": "Em posse"
+        },
+        {
+            "id": 4,
+            "livro": "Coleção Cultural",
+            "estudante": "Dumilde João Manuel",
+            "data_emprestimo": "01/05/2026",
+            "data_vencimento": "14/05/2026",
+            "estado": "Ativo",
+            "accoes": "Devolvido"
+        },
+        {
+            "id": 5,
+            "livro": "Tecnologia da Informação e Comunicação",
+            "estudante": "Alfredo Martins",
+            "data_emprestimo": "10/05/2026",
+            "data_vencimento": "24/05/2026",
+            "estado": "Ativo",
+            "accoes": "Em posse"
+        }
+    ],
+    "alunos": [
+        {
+            "id": 1,
+            "estudante": "Cristiano Carvalho",
+            "n_proc": 71286,
+            "email": "cristianocarvalh207£gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 13,
+            "estado": "Ativo",
+            "emprestimos": 1,
+            "reservas": 2,
+            "extra": "Ativo"
+        },
+        {
+            "id": 2,
+            "estudante": "Celso Huma",
+            "n_proc": 71284,
+            "email": "celsocundiath@gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 13,
+            "estado": "Ativo",
+            "emprestimos": 2,
+            "reservas": 1,
+            "extra": "Ativo"
+        },
+        {
+            "id": 3,
+            "estudante": "Alfredo Martins",
+            "n_proc": 71279,
+            "email": "alfredohsmartins@gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 12,
+            "estado": "Ativo",
+            "emprestimos": 0,
+            "reservas": 1,
+            "extra": "Ativo"
+        },
+        {
+            "id": 4,
+            "estudante": "Álvaro Paulo Francisco de Carvalho",
+            "n_proc": 71280,
+            "email": "alvarocarvalho57@gmail.com",
+            "curso": "Electrônica",
+            "classe": 13,
+            "estado": "Ativo",
+            "emprestimos": 4,
+            "reservas": 5,
+            "extra": "Pendente"
+        },
+        {
+            "id": 5,
+            "estudante": "Martine Ruth Carvalho",
+            "n_proc": 71281,
+            "email": "martinecarvalho2002@gmail.com",
+            "curso": "Telecomunicações",
+            "classe": 13,
+            "estado": "Ativo",
+            "emprestimos": 6,
+            "reservas": 1,
+            "extra": "Pendente"
+        },
+        {
+            "id": 6,
+            "estudante": "Florência Pascoal",
+            "n_proc": 71289,
+            "email": "florenciopascoal@gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 11,
+            "estado": "Suspenso",
+            "emprestimos": 2,
+            "reservas": 1,
+            "extra": "Suspenso"
+        },
+        {
+            "id": 7,
+            "estudante": "Gabriel Daniel Tacanho",
+            "n_proc": 71286,
+            "email": "danieltacanho20@gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 12,
+            "estado": "Ativo",
+            "emprestimos": 1,
+            "reservas": 1,
+            "extra": "Pendente"
+        },
+        {
+            "id": 8,
+            "estudante": "Dumilde João Manuel",
+            "n_proc": 71285,
+            "email": "dumildemanuel7@gmail.com",
+            "curso": "Gestão de Sistemas Informáticos",
+            "classe": 11,
+            "estado": "Suspenso",
+            "emprestimos": 2,
+            "reservas": 0,
+            "extra": "Suspenso"
+        }
+    ],
+    "autores": [
+        {
+            "id": 1,
+            "autor": "Ana Beatriz Andrades",
+            "nacionalidade": "Português",
+            "n_livros": 1
+        },
+        {
+            "id": 2,
+            "autor": "São Carlos",
+            "nacionalidade": "Português",
+            "n_livros": 1
+        },
+        {
+            "id": 3,
+            "autor": "Mariana Sousa Pinto",
+            "nacionalidade": "Brasileira",
+            "n_livros": 2
+        },
+        {
+            "id": 4,
+            "autor": "Luciana Ribeiro",
+            "nacionalidade": "Angolana",
+            "n_livros": 2
+        },
+        {
+            "id": 5,
+            "autor": "Eduardo Lima",
+            "nacionalidade": "Angolano",
+            "n_livros": 2
+        }
+    ],
+    "categorias" : [
+        {
+            "id": 1,
+            "categoria": "Tecnologia",
+            "descricao": "Livros sobre tecnologia, evoluição e modernização",
+            "n_livros": 5
+        },
+        {
+            "id": 2,
+            "categoria": "Cultura e História",
+            "descricao": "Livros sobre Origens e naturalismo, hábitos, e costumes",
+            "n_livros": 3
+        },
+        {
+            "id": 3,
+            "categoria": "Cultura e Romance",
+            "descricao": "Livros que tratam sobre vantagens de acasalamento cultural, hábitos e costumes iguais atraem",
+            "n_livros": 1
+        },
+        {
+            "id": 4,
+            "categoria": "Cultura e Elegância",
+            "descricao": "Livros que tratam da beleza cultural, explicando os valores de cada costume de um certo povo",
+            "n_livros": 1
+        },
+        {
+            "id": 5,
+            "categoria": "Cultura",
+            "descricao": "Livros que relatam sobre cultura num âmbito geral",
+            "n_livros": 1
+        }
     ]
 }

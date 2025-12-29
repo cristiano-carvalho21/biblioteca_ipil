@@ -8,17 +8,23 @@ import CardSorteiaReserva from "../../cards/CardSorteiaReserva";
 function MeuPerfil()
 {
     return(
-        <main className="ms-10 me-10 mt-20 grid grid-cols-[auto_1fr] w-full h-full gap-5">
-            <section>
+        <main className=" mt-20  flex flex-col p-5 lg:flex-row w-full min-h-screen gap-5 lg:ms-10 me-10 ">
+            <section className="mb-60">
                 <CardMeuPerfil/>
             </section>
-            <section className="bg-branco-100">
-                <HeaderEmprestimo/>
-                <CardSorteiaEmprestimo/>
-                <HeaderReservas/>
-                <CardSorteiaReserva/>
-                <CardConfiguracoes/>
-                
+            <section className="flex-1 bg-branco-100"> 
+                <div className="sm:mb-36 md:mb-0">
+                    <HeaderEmprestimo/>
+                    <CardSorteiaEmprestimo/>
+                </div>
+                <div className="sm:mb-36 md:mb-0">
+                    <HeaderReservas/>
+                    <CardSorteiaReserva/>
+                </div>
+                <div>
+                    <CardConfiguracoes/>
+                </div>
+                    
             </section>
                 
         </main>

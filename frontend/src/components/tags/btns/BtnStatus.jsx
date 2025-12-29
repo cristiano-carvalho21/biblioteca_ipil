@@ -1,16 +1,20 @@
 import { LuClock } from "react-icons/lu";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 function BtnStatus({estado, label})
 {
     return(
         <button className={`btnStatus ${estado === "Pendente" ? "btnStatus-pendente" 
-                            : estado === "Reservado" ? "btnStatus-reservado" : ""}`} > 
+                           : estado === "Reservado" || estado === "Disponível" ? "btnStatus-reservado" : estado === "Emprestado" ? "btnStatus-emprestado" : ""}`} > 
         { 
             estado === "Reservado" ? (
                 <FiCheckCircle size={35} />
             ) : estado === "Pendente" ? (
                 <LuClock size={35} />
+            ) : estado === "Emprestado" ? (
+                <FiXCircle size={35} />
+            ) : estado === "Disponível" ? (
+                <FiCheckCircle size={35} />
             ) :(
                 null
             )

@@ -64,7 +64,7 @@ body {
 
 @layer components {
   .minBtnStatus{
-    @apply p-1 flex  mb-2 rounded-lg items-center gap-2;
+    @apply flex  rounded-lg items-center gap-2;
   }
   .minBtnStatus-pendente{
     @apply bg-orange-100 text-orange-700 border border-orange-700;
@@ -88,4 +88,16 @@ body {
     @apply text-laranja-500 font-bold;
   }
   
+}
+
+@layer components{
+  .btnForDetalhe{
+    @apply w-full flex text-center text-xl justify-center p-4 py-3 rounded-lg;
+  }
+  .btnForDetalhe-ok{
+    @apply bg-laranja-500 text-branco-100 border border-laranja-500;
+  }
+  .btnForDetalhe-ko{
+    @apply bg-cinza-500 text-cinza-900 border border-cinza-900;
+  }
 }

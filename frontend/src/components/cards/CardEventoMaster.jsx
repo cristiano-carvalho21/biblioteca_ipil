@@ -11,23 +11,22 @@ function CardEventoMaster({extra})
     return(
         <>
         {eventosFiltrados.map(evento => (
-           <div key={evento.id} className=" relative w-full h-72 grid grid-cols-2  gap-10 mt-10 border border-cinza-700 rounded-md">
-     
-                    <article>
-                        <img src={evento.capa} alt="Imagem" className="w-full h-72  rounded-md " loading="lazy"/>
+            <article className="w-full bg-branco-100 overflow-hidden border border-cinza-500 rounded-md">
+                <div key={evento.id} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="relative w-full h-72 md:h-full overflow-hidden">
+                        <img src={evento.capa} alt="Imagem" className="w-full h-full object-cover rounded-md " loading="lazy"/>
                         <span className={`badgeExpo ${extra === "destaque_master" ? "badgeExpo-destaque" : ""}`}> 
                             <LuStar size={20} className="text-yellow-300 "/> <p className="ps-1">{evento.estado}</p> 
                         </span>
-                    </article>
-                <article>
-                    <button className="mt-5 badgeExpo-evento bg-blue-100 px-3 py-2 rounded-2xl"> {evento.label} </button>
+                    </div>
+                <div className="flex flex-col p-5">
+                    <button className="mt-5 badgeExpo-evento bg-blue-100 px-4 py-2 rounded-2xl sm:w-32 mx-auto"> {evento.label} </button>
                     <h1 className="mt-5 text-2xl"> {evento.titulo} </h1>
                     <p className="text-cinza-900 mt-2"> {evento.descricao} </p>
-                    <div className="space-x-10 mt-5">
-                        <button className="bg-laranja-500 text-branco-100 px-10 p-2 rounded-lg">Participar</button>
-                        <button className="p-2 px-10 bg-cinza-300 text-cinza-900 border border-cinza-700 rounded-lg">Ver Mais</button>
+                    <div className="space-x-2 lg:space-x-10 items-center pt-5 space-y-3 ">
+                        <button className=" bg-laranja-500 text-branco-100 px-10 p-2 rounded-lg">Participar</button>
+                        <button className=" px-10 p-2 bg-cinza-300 text-cinza-900 border border-cinza-700 rounded-lg ">Ver Mais</button>
                     </div>
-
                     <div className="mt-5">
                         <button className="bg-branco-50 text-cinza-900  flex gap-2  mb-2" > 
                             <IoCalendarClearOutline size={25}/> 
@@ -38,9 +37,10 @@ function CardEventoMaster({extra})
                             <p> {evento.local} </p>
                         </button>
                     </div>
-                </article>
-
-            </div>
+                </div>
+                </div>
+            
+            </article>
             ))}
         
         </>

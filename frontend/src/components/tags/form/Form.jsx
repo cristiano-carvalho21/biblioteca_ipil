@@ -1,5 +1,5 @@
 import React from "react";
-import InputGroup from "./inputs/InputGroup";
+import InputGroup from "../inputs/InputGroup";
 
 function Form()
 {

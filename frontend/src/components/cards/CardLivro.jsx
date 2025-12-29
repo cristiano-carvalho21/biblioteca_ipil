@@ -3,7 +3,7 @@ import {MdPersonOutline} from "react-icons/md"
 import {IoCalendarClearOutline} from "react-icons/io5"
 import BadgeLivro from "../tags/badges/BadgeLivro";
 import { Link } from "react-router-dom";
-
+//grid grid-cols-[repeat(auto-fit,minmax(220px.1fr))]
 
 function CardLivro({tipo})
 {
@@ -12,12 +12,11 @@ function CardLivro({tipo})
             livro => livro.extra === tipo ) : livros;
 
     return(
-        <div className="w-full h-65 grid grid-cols-1 gap-5 p-4 bg-branco-100
+        <div className="w-full h-65 grid grid-cols-1 gap-5 p-4 bg-branco-100 justify-items-center
                     sm:grid-cols-2
                     md:grid-cols-3
                     lg:grid-cols-4
                     xl:grid cols-5
-                    
                 ">
             { livrosFiltrados.length > 0 ? (
                 livrosFiltrados.map(livro => (

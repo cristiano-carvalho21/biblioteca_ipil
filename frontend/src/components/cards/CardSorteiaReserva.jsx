@@ -21,19 +21,16 @@ function CardSorteiaReserva()
         }
 
     return(
-        <div className="w-full h-auto ms-10">
+        <div className="w-full h-48 ms-5 ">
             
-                <div key={livroSorteiado.id} className="bg-branco-100 flex gap-10 mb-20 h-40">
+                <div key={livroSorteiado.id} className="bg-branco-100 flex flex-col gap-10  sm:flex-row">
                     <article>
-                        <img src={livroSorteiado.capa} alt="foto" className="w-32 h-full rounded-lg" loading="lazy" />
+                        <img src={livroSorteiado.capa} alt="foto" className="w-32 h-44 object-cover aspect-square rounded-lg" loading="lazy" />
                     </article>
                     <article>
                         <p className="mt-2 text-lg "> {livroSorteiado.titulo} </p>
                         <p className="text-cinza-900 mb-5"> {livroSorteiado.autor} </p>
-                        <button>
-                            <MinBtnStatus estado={livroSorteiado.estado} label={livroSorteiado.label}/>
-                            <p>{livroSorteiado.criterio}</p>
-                        </button>
+                        <MinBtnStatus estado={livroSorteiado.estado} label={livroSorteiado.label}/>
                     </article>
                 </div>
         

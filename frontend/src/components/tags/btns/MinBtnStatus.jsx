@@ -8,16 +8,16 @@ function MinBtnStatus({estado, label})
                             : estado === "Reservado" ? "minBtnStatus-reservado" : ""}`} > 
         { 
             estado === "Reservado" ? (
-                <FiCheckCircle size={20} />
+                <FiCheckCircle size={15} />
             ) : estado === "Pendente" ? (
-                <LuClock size={20} />
+                <LuClock size={15} />
             ) :(
                 null
             )
         }
             <div>
-                <p className="pe-10"> {estado} </p>
-                <p className="text-sm ps-2">{label}</p>
+                <p className="text-sm"> {estado} </p>
+                <p className="text-xs ps-2">{label}</p>
             </div>
         </button>
     );

@@ -1,14 +1,14 @@
 import CardReservas from "../../cards/CardReservas";
-import WelcomeReservas from "./WelcomeReservas";
+import Welcome from "../Welcome";
 
 function Reservas()
 {
     return(
         <main className="mt-20 mb-20 bg-branco-100 p-5 h-full">
             <section className="ms-10">
-                <WelcomeReservas/>
+                <Welcome pages="reservas"/>
             </section>
-            <section className="ms-20">
+            <section>
                     <CardReservas estado="Pendente"/>
                     <CardReservas estado="Reservado"/>
             </section>
