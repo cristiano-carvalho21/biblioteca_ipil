@@ -5,11 +5,15 @@ import BadgeLivro from "../tags/badges/BadgeLivro";
 import { Link } from "react-router-dom";
 //grid grid-cols-[repeat(auto-fit,minmax(220px.1fr))]
 
-function CardLivro({tipo})
+function CardLivro({tipo, pesquisa="", catSelecionado="", estSelecionado=""})
 {
 
-    const livrosFiltrados = tipo ? livros.filter(
-            livro => livro.extra === tipo ) : livros;
+    const livrosFiltrados = pesquisa ? livros.filter(livro => livro.titulo.toLowerCase().includes(pesquisa.toLowerCase())
+                        || livro.autor.toLowerCase().includes(pesquisa.toLowerCase()) || 
+                        livro.categoria.toLowerCase().includes(pesquisa.toLowerCase()))
+                        : catSelecionado ? livros.filter(livro => livro.categoria === catSelecionado )
+                        : estSelecionado ? livros.filter(livro => livro.estado === estSelecionado )
+                        : tipo ? livros.filter(livro => livro.extra === tipo ) : livros;
 
     return(
         <div className="w-full h-65 grid grid-cols-1 gap-5 p-4 bg-branco-100 justify-items-center

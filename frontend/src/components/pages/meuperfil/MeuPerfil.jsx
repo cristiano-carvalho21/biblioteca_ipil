@@ -13,11 +13,11 @@ function MeuPerfil()
                 <CardMeuPerfil/>
             </section>
             <section className="flex-1 bg-branco-100"> 
-                <div className="sm:mb-36 md:mb-0">
+                <div className="mb-32">
                     <HeaderEmprestimo/>
                     <CardSorteiaEmprestimo/>
                 </div>
-                <div className="sm:mb-36 md:mb-0">
+                <div className="mb-48">
                     <HeaderReservas/>
                     <CardSorteiaReserva/>
                 </div>
