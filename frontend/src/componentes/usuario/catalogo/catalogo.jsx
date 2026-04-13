@@ -1,0 +1,43 @@
+import Cabecalho from "../casa/cabecalho/cabecalho";
+import Footer from "../casa/footer/footer";
+import WelcomeCatalogo from "./seccoes/Welcome";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import api from "../../service/api/api";
+import CardLivro from "../cards/cardsLivros/livro";
+
+
+function Catalogo() {
+    
+    const [livros, setLivros] = useState([]); 
+
+    useEffect(() => {
+        const fetchLivros = async() => {
+            try{
+                const res = await api.get('livros/livros/')
+                setLivros(Array.isArray(res.data.results) ? res.data.results : res.data)
+            }catch(err){
+                console.error('Erro ao capturar livros', err)
+            }
+        }
+
+        fetchLivros()
+    }, []);
+
+    return(
+        <div>
+            <Cabecalho/>
+            <motion.main initial={{ opacity: 0, y: 20 }}       // começa invisível e levemente abaixo
+                whileInView={{ opacity: 1, y: 0 }}   // anima quando entra na tela
+                viewport={{ once: true }}             // anima apenas uma vez
+                transition={{ duration: 0.8 }} >
+
+                <WelcomeCatalogo className="pt-16" titulo="Catálogo de Livros" paragrafo="Explore nosso acervo completo"/>
+                <CardLivro/>
+            </motion.main>
+            <Footer/>
+        </div>  
+    )
+}
+
+export default Catalogo;
