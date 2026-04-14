@@ -14,7 +14,7 @@ from .serializers import (
 from .service import criar_reserva, cancelar_reserva, reservar_exposicao, reservar_evento, cancelar_participacao
 User = get_user_model()
 from bibliotecaipil.events import emit_event
-
+from django.utils import timezone
 
 # ==============================
 # BASE VIEWSET (SEGURANÇA)
@@ -297,10 +297,10 @@ class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['titulo', 'descricao']
     oredering_fields = ['data_inicio', 'data_fim']
+    
 
     def get_queryset(self):
-        self.queryset = super().get_queryset()
-        from django.utils import timezone
+        queryset = super().get_queryset()
 
         incluir_passadas = self.request.query_params.get('historico')
 
@@ -320,9 +320,9 @@ class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['titulo', 'descricao']
     oredering_fields = ['data_inicio', 'data_fim']
 
+
     def get_queryset(self):
-        self.queryset = super().get_queryset()
-        from django.utils import timezone
+        queryset = super().get_queryset()
 
         incluir_passadas = self.request.query_params.get('historico')
 

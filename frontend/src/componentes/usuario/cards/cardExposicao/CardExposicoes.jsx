@@ -17,7 +17,7 @@ function CardExposicoes()
 
     const carregarExposicoes = async () => {
         try {
-            const res = await api.get("/livros/exposicoes/?ativas=true");
+            const res = await api.get("/livros/exposicoes/");
             setExposicoes(res.data);
         } catch (error) {
             alert("Erro na captura", error)

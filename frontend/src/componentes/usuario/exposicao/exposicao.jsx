@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { BsStars } from "react-icons/bs";
 import CardExposicoes from "../cards/cardExposicao/CardExposicoes";
 import CardExposicoesMaster from "../cards/cardExposicao/Cardexposicaomaster";
-import CardExposicoesEvento from "../cards/cardExposicao/CardExposicoesEvento";
+import CardEvento from "../cards/cardExposicao/CardEvento";
 import Footer from "../casa/footer/footer";
 
 function Exposicao() {
@@ -35,7 +35,7 @@ function Exposicao() {
                     <CardExposicoes/>
                 </div>
                 <div>
-                    <CardExposicoesEvento/>
+                    <CardEvento/>
                 </div>
             </section>
 

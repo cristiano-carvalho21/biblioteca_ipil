@@ -60,6 +60,14 @@ function ModalEditExposicoes({exposicoes, onClose, setExposicoes})
         });
     };
 
+    const hoje = new Date();
+    
+    const dataMaximaPermitida = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate()
+    ).toISOString().split("T")[0];
+
     async function handleUpdate(e) {
     e.preventDefault();
 

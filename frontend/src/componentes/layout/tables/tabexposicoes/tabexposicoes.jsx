@@ -42,9 +42,10 @@ function TabExposicoes()
         const fetchExposicoes = async() => {
             try{
                 const res = await api.get("/livros/gestao-exposicoes/");
-                setCategorias(Array.isArray(res.data.results) ? res.data.results : res.data);
+                setExposicoes(Array.isArray(res.data.results) ? res.data.results : res.data);
+                console.log(res.data);
             }catch(err){
-                console.error("Erro na captura de Categorias", err)
+                console.error("Erro na captura de Exposições", err)
                 if (err.response?.status === 401) navigate("/login");
             }
         }
@@ -54,6 +55,7 @@ function TabExposicoes()
 
     function handleClick(){
         if (!podeGerir(user)) return;
+        print("Sou o BBV");
         setShowModalExposicao(true);
     }
 

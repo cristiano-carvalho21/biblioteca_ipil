@@ -1,7 +1,9 @@
 import { useState } from "react";
 import api from "../../../service/api/api";
+import { motion } from "framer-motion";
+import { HiOutlineXMark } from "react-icons/hi2";
 
-function ModalAddExposicao()
+function ModalAddExposicao({onClose})
 {
     const [form, setForm] = useState({
         titulo: "",
@@ -28,6 +30,14 @@ function ModalAddExposicao()
             e.target.value,
         });
     };
+    
+    const hoje = new Date();
+    
+    const dataMaximaPermitida = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate()
+    ).toISOString().split("T")[0];
 
     const handleSubmit = async (e) => {
         e.preventDefault();

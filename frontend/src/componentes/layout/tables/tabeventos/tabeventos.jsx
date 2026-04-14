@@ -42,7 +42,7 @@ function TabEventos()
         const fetchExposicoes = async() => {
             try{
                 const res = await api.get("/livros/gestao-eventos/");
-                setCategorias(Array.isArray(res.data.results) ? res.data.results : res.data);
+                setEventos(Array.isArray(res.data.results) ? res.data.results : res.data);
             }catch(err){
                 console.error("Erro na captura de Categorias", err)
                 if (err.response?.status === 401) navigate("/login");
