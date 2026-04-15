@@ -62,14 +62,14 @@ def reservar_exposicao(usuario, exposicao_id):
     with transaction.atomic():
         exposicao = Exposicao.objects.select_for_update().get(id=exposicao_id)
 
-        if exposicao.estado == 'encerrado':
+        if exposicao.estado == 'Encerrado':
             raise ValidationError("Exposição já encerrada.")
         
         if Participacao.objects.filter(usuario=usuario, exposicao=exposicao).exists():
             raise ValidationError("Já estás inscrito.")
         
         if exposicao.vagas_disponiveis() <= 0:
-            exposicao.estado = 'esgotado'
+            exposicao.estado = 'Esgotado'
             exposicao.save()
             raise ValidationError("Sem vagas disponíveis.")
         
@@ -93,14 +93,14 @@ def reservar_evento(usuario, evento_id):
     with transaction.atomic():
         evento = Evento.objects.select_for_update().get(id=evento_id)
 
-        if evento.estado == 'encerrado':
+        if evento.estado == 'Encerrado':
             raise ValidationError("Exposição já encerrada.")
         
         if Participacao.objects.filter(usuario=usuario, evento=evento).exists():
             raise ValidationError("Já estás inscrito.")
         
         if evento.vagas_disponiveis() <= 0:
-            evento.estado = 'esgotado'
+            evento.estado = 'Esgotado'
             evento.save()
             raise ValidationError("Sem vagas disponíveis.")
         

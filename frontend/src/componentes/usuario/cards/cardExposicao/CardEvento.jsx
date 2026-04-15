@@ -17,7 +17,7 @@ function CardEventos()
 
     const carregarEventos = async () => {
         try {
-            const res = await api.get("/livros/eventos/?ativas=true");
+            const res = await api.get("/livros/eventos/");
             setEventos(res.data);
         } catch (error) {
             alert("Erro na captura", error)
@@ -48,7 +48,6 @@ function CardEventos()
                     type: "error",
                     message: erros,
                 });
-                setErro(erros);
             } else {
                 alert("Erro ao comunicar com o servidor");
             }
@@ -63,8 +62,7 @@ function CardEventos()
             whileInView={{ opacity: 1, y: 0 }}   // anima quando entra na tela
             viewport={{ once: true }}             // anima apenas uma vez
             transition={{ duration: 0.8 }} 
-            className="relative w-full overflow-hidden border border-black/17 rounded-md bg-white 
-            hover:shadow-lg hover:scale-102 transition-transform duration-300">
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {eventos.map((ev) => (
                     <div className="flex flex-col w-full" key={ev.id}>
                         <div className="w-full">
@@ -73,7 +71,7 @@ function CardEventos()
                             duration-300 hover:brightness-110 max-h-72" loading="lazy"/>
                             <span className="flex items-center top-5 left-8 absolute bg-blue-100 px-4 py-1 gap-1 rounded-2xl">
                                 {/* <LuStar size={20} className="text-[#F97B17]"/> */}
-                                <p className="text-[#f97b17] font-semibold">Destaque</p> 
+                                <p className="text-[#f97b17] font-semibold">{ev.estado}</p> 
                             </span>
                         </div>
                         <div className="flex flex-col gap-1 py-5 px-5">
@@ -83,7 +81,7 @@ function CardEventos()
                             <div className="flex flex-col">
                                 <div className="bg-branco-50 text-cinza-900 flex gap-2"> 
                                     <IoCalendarClearOutline size={20}/> 
-                                    <p>{ev.data_inicio}</p>
+                                    <p>{ev.data}</p>
                                 </div>
                                 <div className="text-black/85 flex gap-2" > 
                                     <LuClock size={20}/> 
@@ -91,8 +89,9 @@ function CardEventos()
                                 </div>
                             </div>
                             <div className="flex gap-10 py-2">
-                                <button onClick={reservar(ev.id)}
-                                    className="text-white px-10 p-2 rounded-lg bg-[#F97B27] cursor-pointer hover:bg-[#F86417]">Participar
+                                <button onClick={() => reservar(ev.id)}
+                                    className="text-white px-10 p-2 rounded-lg bg-[#F97B27] cursor-pointer hover:bg-[#F86417]">
+                                    Participar
                                 </button>
                                 <button className="cursor-pointer p-2 px-10 border border-black/30 rounded-lg hover:bg-black/30 hover:text-white">Ver Mais</button>
                             </div>

@@ -5,8 +5,9 @@ import os
 from django.utils import timezone
 from rapidfuzz import process
 
-from administracao.models import ConfiguracaoSistema
-from accounts.models import Perfil
+from administracao.models import ConfiguracaoSistema, Multa
+from accounts.models import Perfil, AlunoOficial, FuncionarioOficial
+from audit.models import AuditLog
 from livros.models import Reserva, Livro, Emprestimo, Categoria, Autor
 
 from django.db.models import Count
@@ -202,6 +203,7 @@ def e_pedido_rag_seguro(texto):
     return any(p in texto for p in gatilhos)
 
 
+
 # =========================
 # 🧠 PRIORIDADE DE INTENÇÃO (NOVO)
 # =========================
@@ -261,6 +263,7 @@ def processar_pergunta_unica(texto, user, chat):
 
     if "livros por autor" in texto:
         return [livros_por_autor_geral()]
+    
 
     # =========================
     # 🔥 REGRA DIRETA AUTORES
@@ -268,6 +271,7 @@ def processar_pergunta_unica(texto, user, chat):
     if "autor" in texto:
         if any(p in texto for p in ["quais", "lista", "listar", "mostra"]):
             return [f"Os autores são:\n{autores_lista()}"]
+
 
     # =========================
     # 🎯 INTENÇÕES NLP

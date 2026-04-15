@@ -376,7 +376,7 @@ class Exposicao(models.Model):
         return self.capacidade_maxima - self.participacoes.count()
     
     def atualizar_estado(self):
-        if self.vagas_disponiveis <= 0:
+        if self.vagas_disponiveis < 1:
             self.estado = 'Esgotado'
         else:
             self.estado = 'Disponível'
@@ -390,7 +390,7 @@ class Exposicao(models.Model):
         }.get(self.estado, 'Estado desconhecido')
 
     def clean(self):
-        if self.capacidade_maxima <= 0:
+        if self.capacidade_maxima < 1:
             raise ValidationError("Capacidade deve ser maior que zero.")
         
     def save(self, *args, **kwargs):
@@ -412,8 +412,7 @@ class Evento(models.Model):
     local = models.CharField(max_length=255)
     capacidade_maxima = models.PositiveIntegerField()
     estado = models.CharField(max_length=15, choices=ESTADOS_CHOICES, default='Disponível')
-    data_inicio = models.DateTimeField()
-    data_fim = models.DateTimeField()
+    data = models.DateTimeField()
 
     def __str__(self):
         return f"{self.titulo} - {self.estado}"
@@ -422,7 +421,7 @@ class Evento(models.Model):
         return self.capacidade_maxima - self.participacoes.count()
     
     def atualizar_estado(self):
-        if self.vagas_disponiveis <= 0:
+        if self.vagas_disponiveis < 1:
             self.estado = 'Esgotado'
         else:
             self.estado = 'Disponível'
@@ -436,7 +435,7 @@ class Evento(models.Model):
         }.get(self.estado, 'Estado desconhecido')
 
     def clean(self):
-        if self.capacidade_maxima <= 0:
+        if self.capacidade_maxima < 1:
             raise ValidationError("Capacidade deve ser maior que zero.")
         
     def save(self, *args, **kwargs):
@@ -459,13 +458,13 @@ class Participacao(models.Model):
         if self.exposicao.estado == 'Encerrado':
             raise ValidationError("Exposição encerrada")
         
-        if self.exposicao.vagas_disponiveis <= 0:
+        if self.exposicao.vagas_disponiveis < 1:
             raise ValidationError("Não há vagas disponíveis.")
         
         if self.evento.estado == 'Encerrado':
             raise ValidationError("Exposição encerrada")
         
-        if self.evento.vagas_disponiveis <= 0:
+        if self.evento.vagas_disponiveis < 1:
             raise ValidationError("Não há vagas disponíveis.")
 
 

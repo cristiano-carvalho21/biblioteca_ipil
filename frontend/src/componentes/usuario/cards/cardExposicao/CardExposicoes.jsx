@@ -4,9 +4,12 @@ import {IoCalendarClearOutline} from "react-icons/io5";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import api from "../../../service/api/api";
+import { useAuth } from "../../../auth/userAuth/useauth";
 
 function CardExposicoes()
 {
+
+    const { user, setUser } = useAuth();
     const [exposicoes, setExposicoes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState({
@@ -30,6 +33,7 @@ function CardExposicoes()
     }, []);
 
     const reservar = async (id) => {
+        
         try {
             await api.post(`/livros/gestao-exposicoes/${id}/reservar/`);
             setModal({
@@ -37,6 +41,7 @@ function CardExposicoes()
                 type: "success",
                 message: "Exposição reservada com sucesso!",
             });
+            console.log("Exposição a ser reservada é o seu id é:",id);
         } catch (error) {
             if (error.response?.data) {
                 const erros = Object.values(error.response.data)
@@ -48,7 +53,6 @@ function CardExposicoes()
                     type: "error",
                     message: erros,
                 });
-                setErro(erros);
             } else {
                 alert("Erro ao comunicar com o servidor");
             }
@@ -63,8 +67,7 @@ function CardExposicoes()
             whileInView={{ opacity: 1, y: 0 }}   // anima quando entra na tela
             viewport={{ once: true }}             // anima apenas uma vez
             transition={{ duration: 0.8 }} 
-            className="relative w-full overflow-hidden border border-black/17 rounded-md bg-white 
-            hover:shadow-lg hover:scale-102 transition-transform duration-300">
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {exposicoes.map((expo) => (
                     <div className="flex flex-col w-full" key={expo.id}>
                         <div className="w-full">
@@ -73,7 +76,7 @@ function CardExposicoes()
                             duration-300 hover:brightness-110 max-h-72" loading="lazy"/>
                             <span className="flex items-center top-5 left-8 absolute bg-blue-100 px-4 py-1 gap-1 rounded-2xl">
                                 {/* <LuStar size={20} className="text-[#F97B17]"/> */}
-                                <p className="text-[#f97b17] font-semibold">Destaque</p> 
+                                <p className="text-[#f97b17] font-semibold">{expo.estado}</p> 
                             </span>
                         </div>
                         <div className="flex flex-col gap-1 py-5 px-5">
@@ -83,7 +86,7 @@ function CardExposicoes()
                             <div className="flex flex-col">
                                 <div className="bg-branco-50 text-cinza-900 flex gap-2"> 
                                     <IoCalendarClearOutline size={20}/> 
-                                    <p>{expo.data_inicio}</p>
+                                    <p>{expo.data_inicio} - {expo.data_fim}</p>
                                 </div>
                                 <div className="text-black/85 flex gap-2" > 
                                     <LuClock size={20}/> 
@@ -91,8 +94,9 @@ function CardExposicoes()
                                 </div>
                             </div>
                             <div className="flex gap-10 py-2">
-                                <button onClick={reservar(expo.id)}
-                                    className="text-white px-10 p-2 rounded-lg bg-[#F97B27] cursor-pointer hover:bg-[#F86417]">Participar
+                                <button onClick={() => reservar(expo.id)}
+                                    className="text-white px-10 p-2 rounded-lg bg-[#F97B27] cursor-pointer hover:bg-[#F86417]">
+                                    Participar
                                 </button>
                                 <button className="cursor-pointer p-2 px-10 border border-black/30 rounded-lg hover:bg-black/30 hover:text-white">Ver Mais</button>
                             </div>

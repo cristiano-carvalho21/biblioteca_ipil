@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.apps import apps
 from django.utils import timezone
 from .models import Livro, Autor, Categoria, Reserva, Emprestimo, Notificacao, Exposicao, Evento, Participacao
-
+from .service import reservar_exposicao, reservar_evento
 
 # ==============================
 # LIVRO
@@ -218,7 +218,7 @@ class EventoSerializer(serializers.ModelSerializer):
         return obj.vagas_disponiveis()
 
     def get_descricao_estado(self, obj):
-        return obj.dscricao_estado()
+        return obj.descricao_estado()
     
 
 
@@ -234,7 +234,7 @@ class ParticipacaoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         usuario = self.context['request'].user
         exposicao = validated_data['exposicao']
+        evento = validated_data['evento']
 
-        from .service import reservar_exposicao, reservar_evento
         return reservar_exposicao(usuario, exposicao.id)  
         return reservar_evento(usuario, evento.id)

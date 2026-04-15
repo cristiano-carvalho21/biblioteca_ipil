@@ -229,7 +229,7 @@ class ExposicaoViewSet(viewsets.ModelViewSet):
         
 
 class EventoViewSet(viewsets.ModelViewSet):
-    queryset = Evento.objects.all().order_by('-data_inicio')
+    queryset = Evento.objects.all().order_by('-data')
     serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -311,14 +311,14 @@ class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):
     
 
 class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Evento.objects.all().order_by('-data_inicio')
+    queryset = Evento.objects.all().order_by('-data')
     serializer_class = EventoSerializer
 
     permission_classes = [IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['titulo', 'descricao']
-    oredering_fields = ['data_inicio', 'data_fim']
+    oredering_fields = ['data']
 
 
     def get_queryset(self):
@@ -327,7 +327,7 @@ class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
         incluir_passadas = self.request.query_params.get('historico')
 
         if incluir_passadas != 'true':
-            queryset = queryset.filter(data_fim__gte=timezone.now())
+            queryset = queryset.filter(data__gte=timezone.now())
 
         return queryset
 

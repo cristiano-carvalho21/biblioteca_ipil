@@ -11,8 +11,7 @@ function ModalAddEvento({onClose})
         descricao: "",
         local: "",
         capacidade_maxima: "",
-        data_inicio: "",
-        data_fim: "",
+        data: "",
     });
 
     const [modal, setModal] = useState({
@@ -33,10 +32,10 @@ function ModalAddEvento({onClose})
     
     const hoje = new Date();
     
-    const dataMaximaPermitida = new Date(
+    const dataMinimaPermitida = new Date(
         hoje.getFullYear(),
         hoje.getMonth(),
-        hoje.getDate()
+        hoje.getDate() + 1
     ).toISOString().split("T")[0];
 
     const handleSubmit = async (e) => {
@@ -57,8 +56,7 @@ function ModalAddEvento({onClose})
                 descricao: "",
                 local: "",
                 capacidade_maxima: "",
-                data_inicio: "",
-                data_fim: "",
+                data: "",
             })
         } catch (error) {
             if (error.response?.data) {
@@ -122,18 +120,10 @@ function ModalAddEvento({onClose})
                                 <input type="number" required name="capacidade_maxima" id="capacidade_maxima" value={form.capacidade_maxima} onChange={handleChange} placeholder="titulo da exposição" className="bg-black/5 outline-none py-2 px-2 rounded-lg text-black/70  font-medium focus:ring-2 focus:ring-green-500"/>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-black/75 text-lg">Data Ínicio</label>
-                                <input type="date" name="data_inicio"
-                                    max={dataMaximaPermitida} required placeholder="2000-01-01"
-                                    value={form.data_inicio} onChange={handleChange} 
-                                    className="bg-black/5 outline-none py-2 px-2 rounded-lg text-black/70  font-medium focus:ring-2 focus:ring-green-500"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-black/75 text-lg">Data Fim</label>
-                                <input type="date" name="data_fim"
-                                    max={dataMaximaPermitida} required placeholder="2000-01-01"
-                                    value={form.data_fim} onChange={handleChange} 
+                                <label className="text-black/75 text-lg">Data de Evento</label>
+                                <input type="date" name="data"
+                                    min={dataMinimaPermitida} required placeholder="2000-01-01"
+                                    value={form.data} onChange={handleChange} 
                                     className="bg-black/5 outline-none py-2 px-2 rounded-lg text-black/70  font-medium focus:ring-2 focus:ring-green-500"
                                 />
                             </div>

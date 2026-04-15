@@ -14,7 +14,7 @@ def encerrar_exposicoes():
     )
 
     for expo in exposicoes:
-        expo.estado = 'encerrado'
+        expo.estado = 'Encerrado'
         expo.save()
 
         emit_event("exposicao_encerrada", {
@@ -34,7 +34,7 @@ def encerrar_eventos():
     )
 
     for ev in eventos:
-        ev.estado = 'encerrado'
+        ev.estado = 'Encerrado'
         ev.save()
 
         emit_event("evento_encerrado", {

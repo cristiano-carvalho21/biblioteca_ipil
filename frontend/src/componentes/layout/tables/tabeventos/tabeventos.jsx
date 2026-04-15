@@ -44,7 +44,7 @@ function TabEventos()
                 const res = await api.get("/livros/gestao-eventos/");
                 setEventos(Array.isArray(res.data.results) ? res.data.results : res.data);
             }catch(err){
-                console.error("Erro na captura de Categorias", err)
+                console.error("Erro na captura de Eventos", err)
                 if (err.response?.status === 401) navigate("/login");
             }
         }
@@ -97,11 +97,10 @@ function TabEventos()
                 <table className="w-full table-fixed border-collapse bg-white shadow-md rounded-xl overflow-hidden">
                     <thead className="bg-black/5">
                         <tr>
-                            <th className="w-[15%] px-5 py-3 text-center">Livro(s)</th>
+                            <th className="w-[15%] px-5 py-3 text-center">Tema(s)</th>
                             <th className="w-[25%] px-5 py-3 text-center">Descrição</th>
                             <th className="w-[15%] px-5 py-3 text-center">Local</th>
-                            <th className="w-[15%] px-5 py-3 text-center">Data Ínico</th>
-                            <th className="w-[15%] px-5 py-3 text-center">Data Fim</th>
+                            <th className="w-[15%] px-5 py-3 text-center">Data de Evento</th>
                             {((podeGerir(user)) && <th className="w-[15%] px-5 py-3 text-center">Ações</th>)}
                         </tr>
                     </thead>
@@ -126,8 +125,7 @@ function TabEventos()
                                     </td>
                                     <td className="px-5 py-4 truncate text-center text-black/85"> {ev.descricao} </td>
                                     <td className="px-5 py-4 truncate text-center text-black/85"> {ev.local} </td>
-                                    <td className="px-5 py-4 truncate text-center text-black/85"> {ev.data_inicio} </td>
-                                    <td className="px-5 py-4 truncate text-center text-black/85"> {ev.data_fim} </td>
+                                    <td className="px-5 py-4 truncate text-center text-black/85"> {ev.data} </td>
                                     {((podeGerir(user)) && 
                                         <td className="px-5 py-4 truncate text-center text-black/85">
                                             <div className="flex gap-2 items-center justify-center">

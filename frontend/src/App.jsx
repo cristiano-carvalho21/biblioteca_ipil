@@ -3,6 +3,9 @@ import Catalogo from './componentes/usuario/catalogo/catalogo'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Reservas from './componentes/usuario/reservas/reservas';
 import Exposicao from './componentes/usuario/exposicao/exposicao';
+import MinhasExposicoes from './componentes/usuario/minhasexposicoes/minhasexposicoes';
+import MeusEventos from './componentes/usuario/meuseventos/meuseventos';
+import Participacoes from './componentes/usuario/participacoes/participacoes';
 import Institucional from './componentes/usuario/institucional/institucional';
 import Assistente from './componentes/usuario/assistente/assistente';
 import Perfil from './componentes/usuario/perfil/perfil';
@@ -24,7 +27,6 @@ import Estudantes from './componentes/admin/estudantes/estudantess';
 import EditarLivro from './componentes/admin/editarlivro/editarlivro';
 import CadastroAluno from './componentes/auth/cadastro/cadastro';
 import LoginPage from './componentes/auth/login/login';
-import axios from "axios";
 import ListaNotificacoes from './componentes/layout/tables/tabnotificacoes/TabNotificacoes';
 import AdminAuditLog from './componentes/admin/notificacaoadmin/notificacaoadmin';
 import AlunosOficais from './componentes/admin/alunooficial/alunooficial';
@@ -49,6 +51,9 @@ function App() {
             <Route path="/catalogo" element={<PrivateRoute><Catalogo /></PrivateRoute>} />
             <Route path="/reservas" element={<PrivateRoute><Reservas /></PrivateRoute>} />
             <Route path="/exposicao" element={<PrivateRoute><Exposicao /></PrivateRoute>} />
+            <Route path='minhasexposicoes' element={<PrivateRoute><MinhasExposicoes /></PrivateRoute>}/>
+            <Route path='meuseventos' element={<PrivateRoute><MeusEventos /></PrivateRoute>}/>
+            <Route path='participacoes' element={<PrivateRoute><Participacoes /></PrivateRoute>}/>
             <Route path="/institucional" element={<PrivateRoute><Institucional /></PrivateRoute>} />
             <Route path="/assistente" element={<PrivateRoute><Assistente /></PrivateRoute>} />
             <Route path="/perfil" element={<PrivateRoute><Perfil /></PrivateRoute>} />

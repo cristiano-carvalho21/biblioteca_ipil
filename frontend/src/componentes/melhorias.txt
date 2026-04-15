@@ -1,0 +1,37 @@
+<input
+  type="date"
+  onChange={(e) => {
+    const valor = e.target.value;
+
+    if (!dataValida(valor)) {
+      alert("Data inválida!");
+      e.target.value = "";
+    }
+  }}
+/>
+
+
+function handleChange(e) {
+    const { name, value } = e.target;
+
+    if (name === "data_inicio" || name === "data_fim") {
+        if (!dataValida(value)) {
+            alert("Só datas de hoje para frente!");
+            return; // ❌ bloqueia atualização
+        }
+    }
+
+    setForm(prev => ({
+        ...prev,
+        [name]: value
+    }));
+}
+
+const hoje = new Date().toISOString().split("T")[0];
+
+<input
+  type="date"
+  name="data_inicio"
+  min={hoje}
+  onChange={handleChange}
+/>
