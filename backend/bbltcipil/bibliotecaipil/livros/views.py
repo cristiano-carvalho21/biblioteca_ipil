@@ -175,7 +175,6 @@ class NotificacaoViewSet(viewsets.ModelViewSet):
         return Response({"status": "ok"})
 
 
-
 class ExposicaoViewSet(viewsets.ModelViewSet):
     queryset = Exposicao.objects.all().order_by('-data_inicio')
     serializer_class = ExposicaoSerializer
@@ -191,12 +190,17 @@ class ExposicaoViewSet(viewsets.ModelViewSet):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-        except Exception as e:
+        except ValidationError as e:
             return Response(
                 {"erro": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        except Exception as e:
+            return Response(
+                {"erro": "Erro interno", "detalhe": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=True, methods=['post'])
     def cancelar_reserva(self, request, pk=None):
@@ -221,12 +225,11 @@ class ExposicaoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         
-        except Exception as e:
+        except ValidationError as e:
             return Response(
                 {"erro": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
-            )
-        
+            )        
 
 class EventoViewSet(viewsets.ModelViewSet):
     queryset = Evento.objects.all().order_by('-data')
@@ -280,12 +283,17 @@ class EventoViewSet(viewsets.ModelViewSet):
             )
 
 
-class ParticipacaoViewSet(viewsets.ReadOnlyModelViewSet):
+class ParticipacaoViewSet(viewsets.ModelViewSet):  # 👈 mudou aqui
     serializer_class = ParticipacaoSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Participacao.objects.filter(usuario=self.request.user).order_by('-data_registro')
+        return Participacao.objects.filter(
+            usuario=self.request.user
+        ).order_by('-data_registro')
+
+    def perform_create(self, serializer):
+        serializer.save()
 
 
 class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):

@@ -206,6 +206,7 @@ class ExposicaoSerializer(serializers.ModelSerializer):
         return obj.descricao_estado()
 
 
+
 class EventoSerializer(serializers.ModelSerializer):
     vagas_disponiveis = serializers.SerializerMethodField()
     descricao_estado = serializers.SerializerMethodField()
@@ -219,22 +220,41 @@ class EventoSerializer(serializers.ModelSerializer):
 
     def get_descricao_estado(self, obj):
         return obj.descricao_estado()
-    
 
 
 class ParticipacaoSerializer(serializers.ModelSerializer):
     exposicao = ExposicaoSerializer(read_only=True)
     evento = EventoSerializer(read_only=True)
 
+    # 👇 campos para escrita (IDs)
+    exposicao_id = serializers.IntegerField(write_only=True, required=False)
+    evento_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = Participacao
         fields = '__all__'
         read_only_fields = ['usuario', 'data_registro']
 
+    def validate(self, attrs):
+        exposicao_id = attrs.get('exposicao_id')
+        evento_id = attrs.get('evento_id')
+
+        if not exposicao_id and not evento_id:
+            raise serializers.ValidationError("Deves fornecer uma exposição ou um evento.")
+
+        if exposicao_id and evento_id:
+            raise serializers.ValidationError("Escolhe apenas exposição OU evento, não ambos.")
+
+        return attrs
+
     def create(self, validated_data):
         usuario = self.context['request'].user
-        exposicao = validated_data['exposicao']
-        evento = validated_data['evento']
 
-        return reservar_exposicao(usuario, exposicao.id)  
-        return reservar_evento(usuario, evento.id)
+        exposicao_id = validated_data.pop('exposicao_id', None)
+        evento_id = validated_data.pop('evento_id', None)
+
+        if exposicao_id:
+            return reservar_exposicao(usuario, exposicao_id)
+
+        if evento_id:
+            return reservar_evento(usuario, evento_id)

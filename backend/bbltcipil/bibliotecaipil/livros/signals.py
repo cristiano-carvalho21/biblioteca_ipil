@@ -100,21 +100,21 @@ def livro_criado(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Participacao)
 def atualizar_estado_apos_criar(sender, instance, created, **kwargs):
     if created:
-        exposicao = instance.exposicao
-        exposicao.atualizar_estado()
-        exposicao.save()
+        if instance.exposicao:
+            instance.exposicao.atualizar_estado()
+            instance.exposicao.save()
 
-        evento = instance.evento
-        evento.atualizar_estado()
-        evento.save()
+        if instance.evento:
+            instance.evento.atualizar_estado()
+            instance.evento.save()
 
 
 @receiver(post_delete, sender=Participacao)
 def atualizar_estado_apos_remover(sender, instance, **kwargs):
-        exposicao = instance.exposicao
-        exposicao.atualizar_estado()
-        exposicao.save()
+    if instance.exposicao:
+        instance.exposicao.atualizar_estado()
+        instance.exposicao.save()
 
-        evento = instance.evento
-        evento.atualizar_estado()
-        evento.save()
+    if instance.evento:
+        instance.evento.atualizar_estado()
+        instance.evento.save()

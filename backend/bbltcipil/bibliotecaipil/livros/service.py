@@ -81,20 +81,16 @@ def reservar_exposicao(usuario, exposicao_id):
         exposicao.atualizar_estado()
         exposicao.save()
 
-        emit_event("participacao_criada", {
-            "usuario_id": usuario.id,
-            "exposicao_id": exposicao.id
-        })
-
         return participacao
-    
+
+ 
 
 def reservar_evento(usuario, evento_id):
     with transaction.atomic():
         evento = Evento.objects.select_for_update().get(id=evento_id)
 
         if evento.estado == 'Encerrado':
-            raise ValidationError("Exposição já encerrada.")
+            raise ValidationError("Evento já encerrado.")
         
         if Participacao.objects.filter(usuario=usuario, evento=evento).exists():
             raise ValidationError("Já estás inscrito.")
@@ -114,11 +110,11 @@ def reservar_evento(usuario, evento_id):
 
         emit_event("participacao_criada", {
             "usuario_id": usuario.id,
-            "evento": evento.id
+            "evento_id": evento.id
         })
 
         return participacao
-    
+
 
 def cancelar_participacao(participacao, usuario):
     if participacao.usuario_id != usuario.id:
@@ -129,23 +125,24 @@ def cancelar_participacao(participacao, usuario):
 
     payload = {
         "participacao_id": participacao.id,
-        "exposicao": exposicao.titulo,
         "usuario_id": usuario.id,
     }
 
-    payload = {
-        "participacao_id": participacao.id,
-        "evento": evento.titulo,
-        "usuario_id": usuario.id,
-    }
+    if exposicao:
+        payload["exposicao"] = exposicao.titulo
+
+    if evento:
+        payload["evento"] = evento.titulo
 
     with transaction.atomic():
         participacao.delete()
 
-        exposicao.atualizar_estado()
-        exposicao.save()
+        if exposicao:
+            exposicao.atualizar_estado()
+            exposicao.save()
 
-        evento.atualizar_estado()
-        evento.save()
+        if evento:
+            evento.atualizar_estado()
+            evento.save()
 
     emit_event("participacao_cancelada", payload)

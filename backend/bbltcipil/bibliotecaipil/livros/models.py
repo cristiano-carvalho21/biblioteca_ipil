@@ -372,11 +372,13 @@ class Exposicao(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.estado}"
     
+    # ✅ CORRIGIDO (garantir contagem correta)
     def vagas_disponiveis(self):
         return self.capacidade_maxima - self.participacoes.count()
     
+    # ✅ CORRIGIDO (ERRO PRINCIPAL ESTAVA AQUI)
     def atualizar_estado(self):
-        if self.vagas_disponiveis < 1:
+        if self.vagas_disponiveis() < 1:
             self.estado = 'Esgotado'
         else:
             self.estado = 'Disponível'
@@ -416,12 +418,12 @@ class Evento(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.estado}"
-    
+
     def vagas_disponiveis(self):
         return self.capacidade_maxima - self.participacoes.count()
-    
+
     def atualizar_estado(self):
-        if self.vagas_disponiveis < 1:
+        if self.vagas_disponiveis() < 1:
             self.estado = 'Esgotado'
         else:
             self.estado = 'Disponível'
@@ -429,43 +431,48 @@ class Evento(models.Model):
     def descricao_estado(self):
         return {
             'Disponível': 'Ainda há vagas disponíveis',
-            'Reservado': 'Inscrito nesta exposição',
-            'Esgotado': 'Não há mais vagas disoníveis',
-            'Encerrado': 'A exposição já encerrou.',
+            'Reservado': 'Inscrito neste evento',
+            'Esgotado': 'Não há mais vagas disponíveis',
+            'Encerrado': 'O evento já encerrou.',
         }.get(self.estado, 'Estado desconhecido')
 
     def clean(self):
         if self.capacidade_maxima < 1:
             raise ValidationError("Capacidade deve ser maior que zero.")
-        
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
-
+        
 
 class Participacao(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    exposicao = models.ForeignKey(Exposicao, related_name='participacoes', on_delete=models.CASCADE)
-    evento = models.ForeignKey(Evento, related_name='participacoes', on_delete=models.CASCADE)
+    exposicao = models.ForeignKey(Exposicao, related_name='participacoes', on_delete=models.CASCADE, null=True, blank=True)
+    evento = models.ForeignKey(Evento, related_name='participacoes', on_delete=models.CASCADE, null=True, blank=True)
     compareceu = models.BooleanField(default=False)
     data_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.usuario} - {self.exposicao.titulo}"
-        return f"{self.usuario} - {self.evento.titulo}"
-    
+        if self.exposicao:
+            return f"{self.usuario} - {self.exposicao.titulo}"
+        if self.evento:
+            return f"{self.usuario} - {self.evento.titulo}"
+        return str(self.usuario)
+
     def clean(self):
-        if self.exposicao.estado == 'Encerrado':
-            raise ValidationError("Exposição encerrada")
-        
-        if self.exposicao.vagas_disponiveis < 1:
-            raise ValidationError("Não há vagas disponíveis.")
-        
-        if self.evento.estado == 'Encerrado':
-            raise ValidationError("Exposição encerrada")
-        
-        if self.evento.vagas_disponiveis < 1:
-            raise ValidationError("Não há vagas disponíveis.")
+        if self.exposicao:
+            if self.exposicao.estado == 'Encerrado':
+                raise ValidationError("Exposição encerrada")
+
+            if self.exposicao.vagas_disponiveis() < 1:
+                raise ValidationError("Não há vagas disponíveis.")
+
+        if self.evento:
+            if self.evento.estado == 'Encerrado':
+                raise ValidationError("Evento encerrado")
+
+            if self.evento.vagas_disponiveis() < 1:
+                raise ValidationError("Não há vagas disponíveis.")
 
 
 
