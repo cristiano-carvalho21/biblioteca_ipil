@@ -74,6 +74,9 @@ class Livro(models.Model):
     n_paginas = models.PositiveIntegerField(default=1)
     quantidade = models.PositiveIntegerField(default=1)
 
+    prateleira = models.PositiveIntegerField(null=True, blank=True)
+    fila = models.PositiveIntegerField(blank=True, null=True)
+
     capa = models.URLField(max_length=500)
 
     data = models.DateTimeField(auto_now_add=True)
@@ -91,8 +94,17 @@ class Livro(models.Model):
         if self.n_paginas <= 0:
             raise ValidationError("Número de páginas inválido.")
 
-        if self.isbn and len(self.isbn) not in [10, 13]:
-            raise ValidationError("ISBN inválido.")
+        # if self.isbn and len(self.isbn) not in [10, 13]:
+        #     raise ValidationError("ISBN inválido.")
+
+        if self.isbn:
+            isbn_limpo = self.isbn.replace("-", "").replace(" ", "")
+
+            if not 10 <= len(isbn_limpo) <= 13:
+                raise ValidationError("ISBN deve ter entre 10 e 13 dígitos.")
+
+            self.isbn = isbn_limpo
+            
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -154,8 +166,11 @@ class Reserva(models.Model):
 
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendente', db_index=True)
 
+    stock_descontado = models.BooleanField(default=False)
+
     data_reserva = models.DateTimeField(auto_now_add=True)
     data_aprovacao = models.DateTimeField(null=True, blank=True, db_index=True)
+
     aprovada_por = models.ForeignKey(
         User,
         null=True,
@@ -175,7 +190,6 @@ class Reserva(models.Model):
         if not hasattr(self.usuario, "perfil"):
             raise ValidationError("Usuário sem perfil não pode reservar.")
 
-        # duplicação ativa
         if Reserva.objects.filter(
             usuario=self.usuario,
             livro=self.livro,
@@ -183,14 +197,12 @@ class Reserva(models.Model):
         ).exclude(pk=self.pk).exists():
             raise ValidationError("Já existe reserva ativa.")
 
-        # estoque lógico
         if self.estado == "reservado" and self.livro.quantidade <= 0:
             raise ValidationError("Sem estoque disponível.")
 
         if self.estado == "finalizada" and not self.aprovada_por:
             raise ValidationError("Aprovação requer administrador.")
 
-        # transições seguras
         if self.pk:
             original = Reserva.objects.get(pk=self.pk)
 
@@ -209,11 +221,23 @@ class Reserva(models.Model):
                     )
 
     # =========================
-    # SAVE ONLY PERSISTENCE
+    # SAVE (REGRAS DE NEGÓCIO SEGURAS)
     # =========================
     def save(self, *args, **kwargs):
 
-        # regra automática só na criação
+        is_update = self.pk is not None
+        old_state = None
+        old_stock = False
+
+        # 🔥 capturar estado anterior real do banco
+        if is_update:
+            old = Reserva.objects.get(pk=self.pk)
+            old_state = old.estado
+            old_stock = old.stock_descontado
+
+        # =========================
+        # AUTO CAMPOS
+        # =========================
         if not self.pk:
             if self.livro.quantidade > 0:
                 self.estado = "reservado"
@@ -221,21 +245,70 @@ class Reserva(models.Model):
             else:
                 self.estado = "pendente"
 
-        # consistência de aprovação
         if self.estado == "em_uso" and not self.data_aprovacao:
             self.data_aprovacao = timezone.now()
 
+        # 🔥 validar antes de persistir
         self.full_clean()
+
+        # 🔥 salvar estado base
         super().save(*args, **kwargs)
 
+        # =========================
+        # CONTROLO DE STOCK - ENTRADA EM USO
+        # =========================
+        entrou_em_uso = (
+            is_update and
+            old_state != "em_uso" and
+            self.estado == "em_uso"
+        )
 
+        if entrou_em_uso and not old_stock:
+
+            with transaction.atomic():
+
+                livro = self.livro.__class__.objects.select_for_update().get(pk=self.livro.pk)
+
+                if livro.quantidade <= 0:
+                    raise ValidationError("Sem stock disponível.")
+
+                livro.quantidade -= 1
+                livro.save(update_fields=["quantidade"])
+
+                Reserva.objects.filter(pk=self.pk).update(stock_descontado=True)
+
+        # =========================
+        # CONTROLO DE STOCK - FINALIZAÇÃO
+        # =========================
+        saiu_para_finalizada = (
+            is_update and
+            old_state != "finalizada" and
+            self.estado == "finalizada"
+        )
+
+        if saiu_para_finalizada and old_stock:
+
+            with transaction.atomic():
+
+                livro = self.livro.__class__.objects.select_for_update().get(pk=self.livro.pk)
+
+                livro.quantidade += 1
+                livro.save(update_fields=["quantidade"])
+
+                Reserva.objects.filter(pk=self.pk).update(stock_descontado=False)
+
+    # =========================
+    # STRING
+    # =========================
     def __str__(self):
         return f"{self.livro.titulo} - {self.usuario.first_name} - {self.estado}"
 
-    # 🔹 HELPERS
+    # =========================
+    # HELPERS
+    # =========================
     @property
     def perfil_oficial(self):
-        return Perfil.objects.filter(user=self.usuario).first()
+        return getattr(self.usuario, "perfil", None)
 
     @property
     def capa(self):
@@ -243,15 +316,15 @@ class Reserva(models.Model):
 
     @property
     def informacao(self):
-        info_map = {
+        return {
             'pendente': "Aguardando disponibilidade",
             'reservado': "Confirmada para retirada",
             'em_uso': "Livro em utilização",
             'finalizada': "Processo concluído",
             'expirada': "Expirada automaticamente"
-        }
-        return info_map.get(self.estado, "")
+        }.get(self.estado, "")
     
+
 
 # =============================
 # EMPRESTIMO (TRANSACTION SAFE)
@@ -353,128 +426,211 @@ class Notificacao(models.Model):
 
 
 class Exposicao(models.Model):
-    ESTADOS_CHOICES = [
-        ('Disponível','Disponível'),
-        ('Reservado','Reservado'),
-        ('Esgotado','Esgotado'),
-        ('Encerrado','Encerrado'),
-    ]
 
     titulo = models.CharField(max_length=255)
     capa = models.URLField(max_length=500)
     descricao = models.TextField(blank=True)
     local = models.CharField(max_length=255)
     capacidade_maxima = models.PositiveIntegerField()
-    estado = models.CharField(max_length=15, choices=ESTADOS_CHOICES, default='Disponível')
+    created_at = models.DateTimeField(auto_now_add=True)
+
     data_inicio = models.DateTimeField()
     data_fim = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.titulo} - {self.estado}"
-    
-    # ✅ CORRIGIDO (garantir contagem correta)
+        return self.titulo
+
+    # ==========================
+    # 🔹 RESERVAS FILTRADAS
+    # ==========================
+
+    def reservas_ativas(self):
+        return self.reservas.exclude(estado="Cancelado")
+
+    def reservas_aprovadas(self):
+        return self.reservas.filter(estado="Aprovado")
+
+    def participacoes(self):
+        return self.reservas.filter(estado="Participado")
+
+    # ==========================
+    # 🔹 CONTADORES
+    # ==========================
+
+    def total_reservas(self):
+        return self.reservas_ativas().count()
+
+    def total_aprovadas(self):
+        return self.reservas_aprovadas().count()
+
+    def total_participacoes(self):
+        return self.participacoes().count()
+
     def vagas_disponiveis(self):
-        return self.capacidade_maxima - self.participacoes.count()
+        return self.capacidade_maxima - self.total_reservas()
+
+    # ==========================
+    # 🔹 ESTADO REAL (CORRIGIDO)
+    # ==========================
+
+    def estado_atual(self):
+
+        agora = timezone.now()
+
+        if agora > self.data_fim:
+            return "Encerrado"
+
+        if self.total_reservas() >= self.capacidade_maxima:
+            return "Esgotado"
+
+        return "Disponível"
     
-    # ✅ CORRIGIDO (ERRO PRINCIPAL ESTAVA AQUI)
-    def atualizar_estado(self):
-        if self.vagas_disponiveis() < 1:
-            self.estado = 'Esgotado'
-        else:
-            self.estado = 'Disponível'
+
+    # ==========================
+    # 🔹 DESCRIÇÃO
+    # ==========================
 
     def descricao_estado(self):
-        return {
-            'Disponível': 'Ainda há vagas disponíveis',
-            'Reservado': 'Inscrito nesta exposição',
-            'Esgotado': 'Não há mais vagas disoníveis',
-            'Encerrado': 'A exposição já encerrou.',
-        }.get(self.estado, 'Estado desconhecido')
+
+        estados = {
+        'Disponível': 'Ainda há vagas disponíveis',
+        'Esgotado': 'Não há mais vagas disponíveis',
+        'Encerrado': 'A exposição já encerrou.',
+    }
+
+        return estados.get(self.estado_atual(), 'Estado desconhecido')
+
+    # ==========================
+    # 🔹 VALIDAÇÃO
+    # ==========================
 
     def clean(self):
+
         if self.capacidade_maxima < 1:
             raise ValidationError("Capacidade deve ser maior que zero.")
-        
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 
-class Evento(models.Model):
-    ESTADOS_CHOICES = [
-        ('Disponível','Disponível'),
-        ('Reservado','Reservado'),
-        ('Esgotado','Esgotado'),
-        ('Encerrado','Encerrado'),
+
+class Reserva_Exposicao(models.Model):
+
+    STATUS_CHOICES = [
+        ('Reservado', 'Reservado'),
+        ('Aprovado', 'Aprovado'),
+        ('Participado', 'Participado'),
+        ('Cancelado', 'Cancelado'),
     ]
 
-    titulo = models.CharField(max_length=255)
-    capa = models.URLField(max_length=500)
-    descricao = models.TextField(blank=True)
-    local = models.CharField(max_length=255)
-    capacidade_maxima = models.PositiveIntegerField()
-    estado = models.CharField(max_length=15, choices=ESTADOS_CHOICES, default='Disponível')
-    data = models.DateTimeField()
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    exposicao = models.ForeignKey(
+        'Exposicao',
+        on_delete=models.CASCADE,
+        related_name='reservas'
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Reservado'
+    )
+
+    data_reserva = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    data_aprovacao = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    data_participacao = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        unique_together = ('usuario', 'exposicao')
+        ordering = ['-data_reserva']
+
+    # ==========================
+    # 🔹 APROVAR
+    # ==========================
+
+    def marcar_aprovado(self):
+
+        if self.estado != "Reservado":
+            raise ValidationError(
+                "Só reservas pendentes podem ser aprovadas."
+            )
+
+        self.estado = 'Aprovado'
+
+        self.data_aprovacao = timezone.now()
+
+        self.save()
+
+    # ==========================
+    # 🔹 PARTICIPAÇÃO
+    # ==========================
+
+    def marcar_participado(self):
+
+        agora = timezone.now()
+
+        # Só aprovados participam
+
+        if self.estado != "Aprovado":
+            raise ValidationError(
+                "Só reservas aprovadas podem participar."
+            )
+
+        # Evento ainda não terminou
+
+        if agora < self.exposicao.data_fim:
+            raise ValidationError(
+                "A exposição ainda não terminou."
+            )
+
+        # Passou mais de 1 dia
+
+        limite = self.exposicao.data_fim + timedelta(days=1)
+
+        if agora > limite:
+            raise ValidationError(
+                "O prazo para confirmação de participação expirou."
+            )
+
+        self.estado = 'Participado'
+
+        self.data_participacao = agora
+
+        self.save()
+
+    # ==========================
+    # 🔹 CANCELAR
+    # ==========================
+
+    def cancelar(self):
+
+        if self.estado == "Participado":
+            raise ValidationError(
+                "Não pode cancelar após participação."
+            )
+
+        self.estado = 'Cancelado'
+
+        self.save()
 
     def __str__(self):
-        return f"{self.titulo} - {self.estado}"
 
-    def vagas_disponiveis(self):
-        return self.capacidade_maxima - self.participacoes.count()
-
-    def atualizar_estado(self):
-        if self.vagas_disponiveis() < 1:
-            self.estado = 'Esgotado'
-        else:
-            self.estado = 'Disponível'
-
-    def descricao_estado(self):
-        return {
-            'Disponível': 'Ainda há vagas disponíveis',
-            'Reservado': 'Inscrito neste evento',
-            'Esgotado': 'Não há mais vagas disponíveis',
-            'Encerrado': 'O evento já encerrou.',
-        }.get(self.estado, 'Estado desconhecido')
-
-    def clean(self):
-        if self.capacidade_maxima < 1:
-            raise ValidationError("Capacidade deve ser maior que zero.")
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-        
-
-class Participacao(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    exposicao = models.ForeignKey(Exposicao, related_name='participacoes', on_delete=models.CASCADE, null=True, blank=True)
-    evento = models.ForeignKey(Evento, related_name='participacoes', on_delete=models.CASCADE, null=True, blank=True)
-    compareceu = models.BooleanField(default=False)
-    data_registro = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        if self.exposicao:
-            return f"{self.usuario} - {self.exposicao.titulo}"
-        if self.evento:
-            return f"{self.usuario} - {self.evento.titulo}"
-        return str(self.usuario)
-
-    def clean(self):
-        if self.exposicao:
-            if self.exposicao.estado == 'Encerrado':
-                raise ValidationError("Exposição encerrada")
-
-            if self.exposicao.vagas_disponiveis() < 1:
-                raise ValidationError("Não há vagas disponíveis.")
-
-        if self.evento:
-            if self.evento.estado == 'Encerrado':
-                raise ValidationError("Evento encerrado")
-
-            if self.evento.vagas_disponiveis() < 1:
-                raise ValidationError("Não há vagas disponíveis.")
-
-
+        return (
+            f"{self.usuario.username} -> "
+            f"{self.exposicao.titulo} "
+            f"({self.estado})"
+        )
 
 
 

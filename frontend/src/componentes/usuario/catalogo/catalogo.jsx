@@ -4,7 +4,9 @@ import WelcomeCatalogo from "./seccoes/Welcome";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import api from "../../service/api/api";
-import CardLivro from "../cards/cardsLivros/livro";
+import CardLivroCatalogo from "../cards/cardsLivros/cardsLivroCatalogo/livro";
+//import CardsLivroCatalogo from "../cards/cardsLivros/cardsLivroCatalogo/livro";
+import HelpChatIcon from "../casa/ajuda/chat";
 
 
 function Catalogo() {
@@ -27,13 +29,14 @@ function Catalogo() {
     return(
         <div>
             <Cabecalho/>
+            <HelpChatIcon/>
             <motion.main initial={{ opacity: 0, y: 20 }}       // começa invisível e levemente abaixo
                 whileInView={{ opacity: 1, y: 0 }}   // anima quando entra na tela
                 viewport={{ once: true }}             // anima apenas uma vez
                 transition={{ duration: 0.8 }} >
 
                 <WelcomeCatalogo className="pt-16" titulo="Catálogo de Livros" paragrafo="Explore nosso acervo completo"/>
-                <CardLivro/>
+                <CardLivroCatalogo/>
             </motion.main>
             <Footer/>
         </div>  

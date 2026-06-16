@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { camposBotton, camposMain } from "../campos/campos";
-import { LuBookOpen } from "react-icons/lu";
+import LogoIPIL from "../../../assets/ipillogo.png";
 
 function Sidebar(){
 
@@ -11,11 +11,10 @@ function Sidebar(){
         <aside className="fixed top-0 left-0 bottom-0 flex flex-col border border-b-0 border-t-0 w-82
             border-l border-black/15 bg-white z-50 overflow-hidden">
 
-        
             <div className="flex items-center gap-1 px-5 py-7 border border-t-0 border-l-0 border-r-0 border-black/15">
-                <LuBookOpen className="bg-[#f97b17] size-12  text-white p-2.5 rounded-xl"/>
+                <img src={LogoIPIL} alt="" className="w-18 h-18"/>
                 <div className="flex flex-col gap-0">
-                    <h2 className="text-black/70 text-lg">Administração IPIL
+                    <h2 className="text-[#f97b17] text-xl">Administração IPIL
                         <span className="text-sm text-black/60 block">Sistema de Gestão</span>
                     </h2>
                 </div>

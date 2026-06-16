@@ -10,6 +10,8 @@ import api from "../../../service/api/api";
 import { motion } from "framer-motion";
 import { podeGerir } from "../../../auth/podegerir/permissao";
 import { useAuth } from "../../../auth/userAuth/useauth";
+import { Link } from "react-router-dom";
+import { HiOutlineBell } from "react-icons/hi2";
 
 function TabExposicoes()
 {
@@ -92,6 +94,7 @@ function TabExposicoes()
             >
             <div>
                 {((podeGerir(user)) && <BtnAddAdmin tipo="exposicoes" onClick={handleClick}/>)}
+                {((podeGerir(user)) && <Link to="/admin/tabexposicoesreservadas" className="flex text-end justify-end relative mr-56"><HiOutlineBell size={32}/></Link>)}
             </div>
             <div 
             transition={{ duration: 0.8 }}     // começa invisível e levemente abaixo   
@@ -104,6 +107,7 @@ function TabExposicoes()
                             <th className="w-[15%] px-5 py-3 text-center">Local</th>
                             <th className="w-[15%] px-5 py-3 text-center">Data Ínico</th>
                             <th className="w-[15%] px-5 py-3 text-center">Data Fim</th>
+                            <th className="w-[15%] px-5 py-3 text-center">Participações</th>
                             {((podeGerir(user)) && <th className="w-[15%] px-5 py-3 text-center">Ações</th>)}
                         </tr>
                     </thead>
@@ -126,6 +130,16 @@ function TabExposicoes()
                                     <td className="px-5 py-4 truncate text-center text-black/85"> {exposicao.local} </td>
                                     <td className="px-5 py-4 truncate text-center text-black/85"> {exposicao.data_inicio} </td>
                                     <td className="px-5 py-4 truncate text-center text-black/85"> {exposicao.data_fim} </td>
+                                    <td className="px-5 py-4 text-center">
+                                        <button
+                                            onClick={() =>
+                                                navigate(`/admin/tabparticipacoesexposicao/${exposicao.id}`)
+                                            }
+                                            className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200"
+                                        >
+                                            Participados
+                                        </button>
+                                    </td>
                                     {((podeGerir(user)) && 
                                         <td className="px-5 py-4 truncate text-center text-black/85">
                                             <div className="flex gap-2 items-center justify-center">

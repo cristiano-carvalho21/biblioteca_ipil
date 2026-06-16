@@ -17,13 +17,14 @@ import Emprestimos from './componentes/admin/emprestimos/emprestimos';
 import Acervo from './componentes/admin/acervo/Acervo';
 import CategoriasAutores from './componentes/admin/categorias_autores/catautores';
 import ExposicoesEventos from './componentes/admin/exposicoes_eventos/exposicoes_eventos';
+import TabelaExposicoesReservadas from './componentes/layout/tables/tabexposicoesreservadas/tabexposicoesreservadas';
+import TabelaParticipacoesExposicao from './componentes/layout/tables/tabparticipacoesexposicao/tabparticipacoesexposicao';
 import Relatorios from './componentes/admin/relatorios/Relatorios';
 import Admins from './componentes/admin/admins/admins';
-import Configuracoesadmin from './componentes/admin/configuracoes/Configuracoes';
 import Sair from './componentes/auth/sair/sair';
 import Admin from './componentes/admin/administrador';
 import Multas from './componentes/admin/multas/multa';
-import Estudantes from './componentes/admin/estudantes/estudantess';
+import Estudantes from './componentes/admin/perfis/estudantess';
 import EditarLivro from './componentes/admin/editarlivro/editarlivro';
 import CadastroAluno from './componentes/auth/cadastro/cadastro';
 import LoginPage from './componentes/auth/login/login';
@@ -31,9 +32,11 @@ import ListaNotificacoes from './componentes/layout/tables/tabnotificacoes/TabNo
 import AdminAuditLog from './componentes/admin/notificacaoadmin/notificacaoadmin';
 import AlunosOficais from './componentes/admin/alunooficial/alunooficial';
 import AlterarSenha from './componentes/auth/alterarsenha/alterarsenha';
+import PasswordResetForm from './componentes/auth/recuperacaosenhas/recuperacaosenhas';
 import Privacidade from './componentes/auth/privacidadeuser/privacidade';
 import PrivateRoute from './componentes/auth/rotasprivadas/rotasprivadas';
 import {RoleRoute} from './componentes/auth/adminrotas/adminrotas';
+import Configuracoesadmin from './componentes/admin/configuracoes/Configuracoes';
 
 
 function App() {
@@ -59,6 +62,7 @@ function App() {
             <Route path="/perfil" element={<PrivateRoute><Perfil /></PrivateRoute>} />
             <Route path="/notificacoes" element={<PrivateRoute><ListaNotificacoes /></PrivateRoute>} />
             <Route path="/alterar-senha" element={<PrivateRoute><AlterarSenha /></PrivateRoute>} />
+            <Route path="/recuperacaosenhas" element={<PrivateRoute><PasswordResetForm /></PrivateRoute>} />
             <Route path="/privacidade" element={<PrivateRoute><Privacidade /></PrivateRoute>} />
 
             <Route path="detalhes/:id" element={<PrivateRoute><Detalhes /></PrivateRoute>} />
@@ -70,15 +74,17 @@ function App() {
               <Route path="gestao" element={<GestaoLivros />} />
               <Route path="addlivro" element={<AddLivro />} />
               <Route path="livros/:id" element={<EditarLivro />} />
-              <Route path="estudantes" element={<Estudantes />} />
+              <Route path="perfis" element={<Estudantes />} />
               <Route path="alunosoficiais" element={<AlunosOficais />} />
               <Route path="emprestimos" element={<Emprestimos />} />
               <Route path="multas" element={<Multas />} />
               <Route path="acervo" element={<Acervo />} />
               <Route path="categoriasautores" element={<CategoriasAutores />} />
               <Route path="exposicoes_eventos" element={<ExposicoesEventos />} />
+              <Route path="tabexposicoesreservadas" element={<TabelaExposicoesReservadas />} />
+              <Route path="tabparticipacoesexposicao/:id" element={<TabelaParticipacoesExposicao />} />
               <Route path="relatorios" element={<Relatorios />} />
-              <Route path="configuracoesadmin" element={<Configuracoesadmin />} />
+              <Route path="configuracoes" element={<Configuracoesadmin />} />
               <Route path="admins" element={<Admins />} />
               <Route path="audit-log" element={<AdminAuditLog />} />
               <Route path="" element={<Sair />} />

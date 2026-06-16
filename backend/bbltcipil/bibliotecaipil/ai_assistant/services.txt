@@ -1,0 +1,1611 @@
+###############################################################
+                        SERVICE MUITO ANTIGO
+###############################################################
+import re
+import unicodedata
+import os
+
+from django.utils import timezone
+from rapidfuzz import process
+
+from administracao.models import ConfiguracaoSistema, Multa
+from accounts.models import Perfil, AlunoOficial, FuncionarioOficial
+from audit.models import AuditLog
+from livros.models import Reserva, Livro, Emprestimo, Categoria, Autor
+
+from django.db.models import Count
+
+from .memory import obter_memoria_inteligente, resolver_followup
+from .nlp_model import prever, normalizar, reduzir_repeticoes
+from .rag_engine import buscar_livros
+
+
+# =========================
+# ✂️ DIVISÃO INTELIGENTE DE PERGUNTAS
+# =========================
+def dividir_perguntas(texto):
+    separadores = r'[?.,;]| e | também | alem disso | depois |\n'
+    partes = re.split(separadores, texto)
+
+    perguntas = [
+        p.strip() for p in partes
+        if p.strip() and len(p.strip()) > 2
+    ]
+
+    return perguntas
+
+
+# =========================
+# 🔍 MATCH INTELIGENTE
+# =========================
+def extrair_categoria(texto):
+    categorias = list(Categoria.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, categorias)
+    return match[0] if match and match[1] > 70 else None
+
+
+def extrair_autor(texto):
+    autores = list(Autor.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, autores)
+    return match[0] if match and match[1] > 70 else None
+
+
+# =========================
+# 📚 LISTAGENS
+# =========================
+def livros_por_categoria_geral():
+    return "\n".join(
+        f"\n📂 {c.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(categoria=c))
+        for c in Categoria.objects.all()
+        if Livro.objects.filter(categoria=c).exists()
+    ) or "Sem dados."
+
+
+def livros_por_autor_geral():
+    return "\n".join(
+        f"\n👤 {a.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(autor=a))
+        for a in Autor.objects.all()
+        if Livro.objects.filter(autor=a).exists()
+    ) or "Sem dados."
+
+
+def livros_lista():
+    return "\n".join(f"• {l.titulo}" for l in Livro.objects.all()) or "Sem livros."
+
+
+# =========================
+# 🔥 FILTROS DINÂMICOS
+# =========================
+def livros_por_categoria_nome(nome):
+    livros = Livro.objects.filter(categoria__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+def livros_por_autor_nome(nome):
+    livros = Livro.objects.filter(autor__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+# =========================
+# 📊 ESTATÍSTICAS
+# =========================
+def livros_recentes(limit=4):
+    livros = Livro.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem livros."
+
+
+def livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📚 O livro mais recente é: {livro.titulo}" if livro else "Sem livros."
+
+
+def livros_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📚 O livro mais popular ou o mais popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def livros_menos_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_menos_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("total").first()
+    return f"📚 O livro menos requisitado ou o menso popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def categorias_lista():
+    return "\n".join(f"• {c.nome}" for c in Categoria.objects.all()) or "Sem categorias."
+
+
+def categoria_top():
+    categoria = Categoria.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"📂 A categoria com mais livros é: {categoria.nome}" if categoria else "Sem dados."
+
+
+def categorias_recentes(limit=4):
+    categoria = Categoria.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categoria) or "Sem categorias."
+
+
+def categorias_poucos_livros(limit=4):
+    categorias = Categoria.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categorias) or "Sem dados."
+
+
+def categoria_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📂 A categoria com o livro mais recente é: {livro.categoria.nome}" if livro else "Sem livros."
+
+
+def categorias_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.categoria.nome}" for l in livros) or "Sem dados."
+
+
+def categoria_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📂 A categoria mais popular ou a mais requisitada é: {livro.categoria.nome}" if livro else "Sem dados."
+
+
+def autores_lista():
+    return "\n".join(f"• {a.nome}" for a in Autor.objects.all()) or "Sem autores."
+
+
+def autor_top():
+    autor = Autor.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"👤 O autor com mais obras é: {autor.nome}" if autor else "Sem dados."
+
+
+def autores_recentes(limit=4):
+    autores = Autor.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem autores."
+
+
+def autores_poucos_livros(limit=4):
+    autores = Autor.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem dados."
+
+
+def autor_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"👤 O Autor com o livro mais recente é: {livro.autor.nome}" if livro else "Sem livros."
+
+
+def autores_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.autor.nome}" for l in livros) or "Sem dados."
+
+
+def autor_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"👤 O Autor mais popular é: {livro.autor.nome}" if livro else "Sem dados."
+
+
+# =========================
+# 🧠 INTENÇÕES EXTRAS
+# =========================
+def e_consulta_direta(texto):
+    padroes = [
+        "lista livros", "listar livros", "todos os livros",
+        "quais são os livros", "quais sao os livros",
+        "mostra livros"
+    ]
+    return any(p in texto for p in padroes)
+
+
+def e_pedido_rag_seguro(texto):
+    gatilhos = ["livro sobre", "recomenda", "parecido com", "semelhante", "tema"]
+    return any(p in texto for p in gatilhos)
+
+
+
+# =========================
+# 🧠 PRIORIDADE DE INTENÇÃO (NOVO)
+# =========================
+def prioridade_intencao(texto):
+    if "quantos" in texto or "quantidade" in texto:
+        return "quantidade"
+    if any(p in texto for p in ["lista", "listar", "mostra", "quais"]):
+        return "lista"
+    return None
+
+
+# =========================
+# 🧠 PROCESSAMENTO PRINCIPAL
+# =========================
+def processar_pergunta_unica(texto, user, chat):
+    memoria = obter_memoria_inteligente(chat)
+
+    texto = normalizar(texto)
+    texto = reduzir_repeticoes(texto)
+
+    tipo = prioridade_intencao(texto)
+
+    # 🔢 PRIORIDADE MÁXIMA → QUANTIDADE
+    if tipo == "quantidade":
+        if "livros" in texto:
+            return [f"A biblioteca contém {Livro.objects.count()} livros 📚."]
+        if "reservas" in texto:
+            return [f"Tens {Reserva.objects.filter(usuario=user).count()} reservas 📚."]
+        if "emprestimos" in texto:
+            return [f"Tens {Emprestimo.objects.filter(reserva__usuario=user).count()} empréstimos 📚."]
+
+    intencao = prever(texto)
+
+    followup = resolver_followup(texto, memoria)
+    if followup:
+        intencao = followup
+
+    print("🎯 Intenção:", intencao)
+
+    # =========================
+    # 📚 CONSULTA DIRETA (AGORA SEGURA)
+    # =========================
+    if e_consulta_direta(texto) and tipo != "quantidade":
+        return [f"📚 Os livros da biblioteca são:\n{livros_lista()}"]
+
+    # =========================
+    # 🧠 INTENÇÕES MANUAIS
+    # =========================
+    if any(p in texto for p in ["horario", "horário", "funciona", "abre", "fecha"]):
+        config = ConfiguracaoSistema.objects.first()
+        if config and config.horario_funcionamento:
+            return [f"⏰ Horário da biblioteca:\n{config.horario_funcionamento}"]
+        return ["⏰ A biblioteca funciona das 08h às 17h."]
+
+    if "livros por categoria" in texto:
+        return [livros_por_categoria_geral()]
+
+    if "livros por autor" in texto:
+        return [livros_por_autor_geral()]
+    
+
+    # =========================
+    # 🔥 REGRA DIRETA AUTORES
+    # =========================
+    if "autor" in texto:
+        if any(p in texto for p in ["quais", "lista", "listar", "mostra"]):
+            return [f"Os autores são:\n{autores_lista()}"]
+
+
+    # =========================
+    # 🎯 INTENÇÕES NLP
+    # =========================
+    if intencao == "saudacao":
+        return ["Estou bem sim obrigado 😊 \n Como posso te ajudar?"]
+
+    if intencao == "saudacao_time":
+        hora = timezone.now().hour
+        if hora < 12:
+            return ["Bom dia 👋 Como posso te ajudar?"]
+        elif hora < 18:
+            return ["Boa tarde 👋 Como posso te ajudar?"]
+        return ["Boa noite 👋 Como posso te ajudar?"]
+
+    if intencao == "saudacao_breve":
+        return ["Olá 👋 Como posso te ajudar?"]
+
+    if intencao == "livros_lista":
+        return [f"Os livros 📚 da biblioteca são:\n{livros_lista()}"]
+
+    if intencao == "livros_qtd":
+        return [f"A biblioteca contém {Livro.objects.count()} livros 📚."]
+
+    if intencao == "livro_popular":
+        return [livro_mais_popular()]
+
+    if intencao == "livros_populares":
+        return [f"🔥 Os livros mais populares ou os mais requisitados são:\n{livros_populares()}"]
+
+    if intencao == "livros_menos_populares":
+        return [f"📉 Os livros menos populares ou os menos requisitados são:\n{livros_menos_populares()}"]
+
+    if intencao == "livro_menos_popular":
+        return [livro_menos_popular()]
+
+    if intencao == "livros_recentes":
+        return [f"📚 livros mais recentes:\n{livros_recentes()}"]
+
+    if intencao == "livro_recente":
+        return [livro_mais_recente()]
+
+    if intencao == "categoria_top":
+        return [categoria_top()]
+
+    if intencao == "categorias_recentes":
+        return [f"📂 As Categorias recentes são:\n{categorias_recentes()}"]
+    
+    if intencao == "categorias_populares":
+        return [f"📂 As Categorias populares ou as mais requisitadas são:\n{categorias_populares()}"]
+
+    if intencao == "categorias_poucas":
+        return [f"📂 Categorias com poucos livros:\n{categorias_poucos_livros()}"]
+
+    if intencao == "categoria_livro_recente":
+        return [categoria_livro_mais_recente()]
+
+    if intencao == "categoria_mais_requisitada":
+        return [categoria_mais_popular()]
+
+    if intencao == "categorias_qtd":
+        return [f"Existem {Categoria.objects.count()} categorias no acervo da biblioteca."]
+
+    if intencao == "categorias_lista":
+        return [f"As categorias existentes são:\n{categorias_lista()}"]
+
+    if intencao == "autor_top":
+        return [autor_top()]
+
+    if intencao == "autores_recentes":
+        return [f"👤 Os recentes autores são:\n{autores_recentes()}"]    
+    
+    if intencao == "autores_populares":
+        return [f"👤 Os Autores populares ou os mais requisitados são:\n{autores_populares()}"]
+
+    if intencao == "autores_poucos":
+        return [f"👤 Autores com poucas obras:\n{autores_poucos_livros()}"]
+
+    if intencao == "autor_livro_recente":
+        return [autor_livro_mais_recente()]
+
+    if intencao == "autor_mais_requisitado":
+        return [autor_mais_popular()]
+
+    if intencao == "autores_qtd":
+        return [f"Existem {Autor.objects.count()} autores no acervo da biblioteca."]
+
+    if intencao == "autores_lista":
+        return [f"Os autores são:\n{autores_lista()}"]
+
+    if intencao == "reservas_qtd":
+        return [f"Tens {Reserva.objects.filter(usuario=user).count()} reservas 📚."]
+
+    if intencao == "emprestimos_qtd":
+        return [f"Tens {Emprestimo.objects.filter(reserva__usuario=user).count()} empréstimos 📚."]
+
+    # =========================
+    # 🔥 EXTRAÇÃO DINÂMICA
+    # =========================
+    categoria_detectada = extrair_categoria(texto)
+    autor_detectado = extrair_autor(texto)
+
+    if categoria_detectada:
+        return [f"📂 Livros da categoria {categoria_detectada}:\n{livros_por_categoria_nome(categoria_detectada)}"]
+
+    if autor_detectado:
+        return [f"👤 Livros do autor {autor_detectado}:\n{livros_por_autor_nome(autor_detectado)}"]
+
+    # =========================
+    # 🔎 RAG CONTROLADO
+    # =========================
+    if e_pedido_rag_seguro(texto):
+        resultados = buscar_livros(texto)
+
+        if resultados:
+            resposta = "📚 Encontrei estes livros relacionados:\n"
+            resposta += "\n".join(f"• {r['livro'].titulo}" for r in resultados)
+            return [resposta]
+
+    # =========================
+    # ❌ FALLBACK
+    # =========================
+    return ["🤔 Não entendi bem. Podes reformular a pergunta?"]
+
+
+# =========================
+# 🧠 MULTI-INTENÇÃO
+# =========================
+def processar(texto, user, chat):
+    perguntas = dividir_perguntas(texto)
+
+    respostas = []
+
+    for p in perguntas:
+        print("🧩 Pergunta:", p)
+        resp = processar_pergunta_unica(p, user, chat)
+        if resp:
+            respostas.extend(resp)
+
+    respostas = list(dict.fromkeys(respostas))
+
+    return respostas if respostas else ["🤔 Não entendi bem."]
+
+
+# =========================
+# 🤖 RESPOSTA FINAL
+# =========================
+def gerar_resposta(pergunta, user, chat):
+    perfil = Perfil.objects.filter(user=user).first()
+    nome = perfil.nome.split()[0] if perfil and perfil.nome else user.username
+
+    respostas = processar(pergunta, user, chat)
+
+    return f"{nome} 😊\n" + "\n".join(respostas)
+
+
+# celery -A bibliotecaipil worker --loglevel=info --pool=solo
+# celery -A bibliotecaipil beat --loglevel=info
+
+
+
+###############################################################
+                        MEU SERVICES ANTIGO
+###############################################################
+import re
+import unicodedata
+import os
+
+from django.utils import timezone
+from rapidfuzz import process
+
+from administracao.models import ConfiguracaoSistema, Multa
+from accounts.models import Perfil, AlunoOficial, FuncionarioOficial
+from audit.models import AuditLog
+from livros.models import Reserva, Livro, Emprestimo, Categoria, Autor, Exposicao, Evento
+
+from django.db.models import Count
+
+from .memory import obter_memoria_inteligente, resolver_followup
+from .nlp_model import prever, normalizar, reduzir_repeticoes
+from .rag_engine import buscar_livros
+
+
+# =========================
+# ✂️ DIVISÃO INTELIGENTE DE PERGUNTAS
+# =========================
+def dividir_perguntas(texto):
+    separadores = r'[?.,;]| e | também | alem disso | depois |\n'
+    partes = re.split(separadores, texto)
+
+    perguntas = [
+        p.strip() for p in partes
+        if p.strip() and len(p.strip()) > 2
+    ]
+
+    return perguntas
+
+
+def formatar_lista(qs, campo="titulo", vazio="Sem resultados."):
+    itens = list(qs)
+    if not itens:
+        return vazio
+
+    return "\n".join(
+        f"• {getattr(i, campo)}"
+        for i in itens if getattr(i, campo, None)
+    )
+
+
+def reduzir_repeticoes(texto):
+    palavras = []
+
+    for palavra in texto.split():
+        nova = re.sub(r'(.)\1{2,}', r'\1', palavra)
+        palavras.append(nova)
+
+    return " ".join(palavras)
+    
+
+# =========================
+# 🔍 MATCH INTELIGENTE
+# =========================
+def extrair_categoria(texto):
+    categorias = list(Categoria.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, categorias)
+    return match[0] if match and match[1] > 70 else None
+
+
+def extrair_autor(texto):
+    autores = list(Autor.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, autores)
+    return match[0] if match and match[1] > 70 else None
+
+
+# =========================
+# 📚 LISTAGENS
+# =========================
+def livros_por_categoria_geral():
+    return "\n".join(
+        f"\n📂 {c.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(categoria=c))
+        for c in Categoria.objects.all()
+        if Livro.objects.filter(categoria=c).exists()
+    ) or "Sem dados."
+
+
+def livros_por_autor_geral():
+    return "\n".join(
+        f"\n👤 {a.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(autor=a))
+        for a in Autor.objects.all()
+        if Livro.objects.filter(autor=a).exists()
+    ) or "Sem dados."
+
+
+def livros_lista():
+    return "\n".join(f"• {l.titulo}" for l in Livro.objects.all()) or "Sem livros."
+
+
+# =========================
+# 🔥 FILTROS DINÂMICOS
+# =========================
+def livros_por_categoria_nome(nome):
+    livros = Livro.objects.filter(categoria__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+def livros_por_autor_nome(nome):
+    livros = Livro.objects.filter(autor__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+# =========================
+# 📊 ESTATÍSTICAS
+# =========================
+def livros_recentes(limit=4):
+    livros = Livro.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem livros."
+
+
+def livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📚 O livro mais recente é: {livro.titulo}" if livro else "Sem livros."
+
+
+def livros_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📚 O livro mais popular ou o mais popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def livros_menos_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_menos_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("total").first()
+    return f"📚 O livro menos requisitado ou o menso popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def categorias_lista():
+    return "\n".join(f"• {c.nome}" for c in Categoria.objects.all()) or "Sem categorias."
+
+
+def categoria_top():
+    categoria = Categoria.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"📂 A categoria com mais livros é: {categoria.nome}" if categoria else "Sem dados."
+
+
+def categorias_recentes(limit=4):
+    categoria = Categoria.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categoria) or "Sem categorias."
+
+
+def categorias_poucos_livros(limit=4):
+    categorias = Categoria.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categorias) or "Sem dados."
+
+
+def categoria_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📂 A categoria com o livro mais recente é: {livro.categoria.nome}" if livro else "Sem livros."
+
+
+def categorias_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.categoria.nome}" for l in livros) or "Sem dados."
+
+
+def categoria_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📂 A categoria mais popular ou a mais requisitada é: {livro.categoria.nome}" if livro else "Sem dados."
+
+
+def autores_lista():
+    return "\n".join(f"• {a.nome}" for a in Autor.objects.all()) or "Sem autores."
+
+
+def autor_top():
+    autor = Autor.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"👤 O autor com mais obras é: {autor.nome}" if autor else "Sem dados."
+
+
+def autores_recentes(limit=4):
+    autores = Autor.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem autores."
+
+
+def autores_poucos_livros(limit=4):
+    autores = Autor.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem dados."
+
+
+def autor_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"👤 O Autor com o livro mais recente é: {livro.autor.nome}" if livro else "Sem livros."
+
+
+def autores_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.autor.nome}" for l in livros) or "Sem dados."
+
+
+def autor_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"👤 O Autor mais popular é: {livro.autor.nome}" if livro else "Sem dados."
+
+
+def exposicoes_lista():
+    return "\n".join(f"• {e.titulo}" for e in Exposicao.objects.all()) or "Sem exposições."
+
+
+def eventos_lista():
+    return "\n".join(f"• {e.titulo}" for e in Evento.objects.all()) or "Sem eventos."
+
+
+def alunos_lista():
+    return "\n".join(f"• {a.nome}" for a in AlunoOficial.objects.all()) or "Sem alunos."
+
+
+def funcionarios_lista():
+    return "\n".join(f"• {f.nome}" for f in FuncionarioOficial.objects.all()) or "Sem funcionários."
+
+
+
+#🧠 1. DETECTAR TIPO DE PERFIL (ESSENCIAL)
+def tipo_perfil(perfil):
+    if hasattr(perfil, "aluno_oficial"):
+        return "aluno_oficial"
+    
+    if hasattr(perfil, "funcionario_oficial"):
+        return "funcionario_oficial"
+    
+    return "desconhecido"
+
+
+#🎯 2. QUEM PODE FAZER EMPRÉSTIMOS
+def pode_fazer_reserva(user):
+    perfil = Perfil.objects.filter(user=user).first()
+
+    if not perfil:
+        return False, "Perfil não encontrado."
+
+    tipo = tipo_perfil(perfil)
+
+    if tipo in ["aluno_oficial", "funcionario_oficial"]:
+        if perfil.estado == "Suspenso":
+            return False, "❌ O teu perfil está suspenso devido a atrasos."
+
+        return True, "✅ Podes fazer reservas."
+
+    return False, "❌ O teu tipo de perfil não pode fazer reservas."
+
+
+def pode_fazer_emprestimo(user):
+    perfil = Perfil.objects.filter(user=user).first()
+
+    if not perfil:
+        return False, "Perfil não encontrado."
+
+    tipo = tipo_perfil(perfil)
+
+    if tipo == "funcionario_oficial":
+        if perfil.estado == "Suspenso":
+            return False, "❌ O teu perfil está suspenso devido a atrasos."
+
+        return True, "✅ Podes fazer empréstimos."
+
+    return False, "❌ O teu tipo de perfil não pode fazer empréstimos."
+
+
+#💰 4. REGRAS DE MULTAS (BASEADO NO TEU MODEL)
+def obter_regras_multa():
+    config = ConfiguracaoSistema.objects.first()
+
+    if not config:
+        return "⚠️ Configurações não definidas."
+
+    return (
+        f"💰 Regras de multa:\n"
+        f"• Atraso: {config.multa_por_dia} Kz por dia\n"
+        f"• Dano: {config.multa_por_dano} Kz\n"
+        f"• Perda: {config.multa_por_perda} Kz"
+    )
+
+
+#📚 5. REGRAS DE EMPRÉSTIMO (BÓNUS FORTE)
+def obter_regras_emprestimo():
+    config = ConfiguracaoSistema.objects.first()
+
+    if not config:
+        return "⚠️ Configurações não definidas."
+
+    return (
+        f"📚 Regras de empréstimo:\n"
+        f"• Duração: {config.dias_emprestimo} dias\n"
+        f"• Limite de livros (estudante): {config.limite_livros_estudante}"
+    )
+
+
+# =========================
+# 🧠 INTENÇÕES EXTRAS
+# =========================
+def e_consulta_direta(texto):
+    padroes = [
+        "lista livros", "listar livros", "todos os livros",
+        "quais são os livros", "quais sao os livros",
+        "mostra livros"
+    ]
+    return any(p in texto for p in padroes)
+
+
+def e_pedido_rag_seguro(texto):
+    gatilhos = ["livro sobre", "recomenda", "parecido com", "semelhante", "tema"]
+    return any(p in texto for p in gatilhos)
+
+
+# =========================
+# 🧠 PRIORIDADE DE INTENÇÃO (NOVO)
+# =========================
+def prioridade_intencao(texto):
+    if "quantos" in texto or "quantidade" in texto:
+        return "quantidade"
+    if any(p in texto for p in ["lista", "listar", "mostra", "quais"]):
+        return "lista"
+    return None
+
+
+# =====================================================
+# 🧠 CONFIDENCIAL
+# =====================================================
+
+def consultas_confidenciais(user, intencao):
+    perfil = tipo_perfil(user)
+
+    if not perfil:
+        return None
+
+    if perfil == "funcionario_oficial":
+        if intencao == "relatorio_alunos":
+            from accounts.models import AlunoOficial
+            return [f"👨‍🎓 O Total de alunos é: {AlunoOficial.objects.count()}\nE são estes:{alunos_lista()}"]
+
+        if intencao == "relatorio_funcionarios":
+            from accounts.models import FuncionarioOficial
+            return [f"👨‍🏫 O Total de funcionários é: {FuncionarioOficial.objects.count()}\nE são estes:{funcionarios_lista()}"]
+
+        if intencao == "emprestimos_ativos":
+            total = Emprestimo.objects.filter(acoes="ativo").count()
+            return [f"📦 Os Empréstimos ativos são: {total}\nE são estes:{Emprestimo.objects.filter(reserva__usuario=user).all()}"]
+        
+        if intencao == "reservas_ativos":
+            total = Reserva.objects.filter(acoes="ativo").count()
+            return [f"📦 As Reservas ativos são: {total}\nE são estes:{Reserva.objects.filter(usuario=user).all()}"]
+
+    return None
+
+
+# =====================================================
+# 🔥 RECOMENDAÇÃO
+# =====================================================
+
+def recomendar_livros(texto):
+    q = {}
+
+    for p in texto.split():
+        q[p] = True
+
+    livros = Livro.objects.all()[:6]
+
+    return "📚 Recomendações:\n" + "\n".join(f"• {l.titulo}" for l in livros)
+
+
+def recomendar_categoria(nome):
+    livros = Livro.objects.filter(categoria__nome__icontains=nome)
+    return "📚 Por categoria:\n" + formatar_lista(livros)
+
+
+def recomendar_autor(nome):
+    livros = Livro.objects.filter(autor__nome__icontains=nome)
+    return "📚 Por autor:\n" + formatar_lista(livros)
+
+
+def recomendar_descricao(texto):
+    res = buscar_livros(texto)
+    if not res:
+        return "Sem recomendações."
+    return "📚 Por descrição:\n" + "\n".join(f"• {r['livro'].titulo}" for r in res)
+
+
+# =========================
+# 🧠 PROCESSAMENTO PRINCIPAL
+# =========================
+def processar_pergunta_unica(texto, user, chat):
+    memoria = obter_memoria_inteligente(chat)
+
+    texto = normalizar(texto)
+    texto = reduzir_repeticoes(texto)
+
+    tipo = prioridade_intencao(texto)
+
+    # 🔢 PRIORIDADE MÁXIMA → QUANTIDADE
+    if tipo == "quantidade":
+        if "livros" in texto:
+            return [f"A biblioteca contém {Livro.objects.count()} livros 📚."]
+        if "reservas" in texto:
+            return [f"Tens {Reserva.objects.filter(usuario=user).count()} reservas 📚."]
+        if "emprestimos" in texto:
+            return [f"Tens {Emprestimo.objects.filter(reserva__usuario=user).count()} empréstimos 📚."]
+
+
+    print("=" * 50)
+    print("Original:", texto)
+    texto = normalizar(texto)
+    print("Normalizado:", texto)
+
+    texto = reduzir_repeticoes(texto)
+    print("Reduzido:", texto)
+
+    intencao = prever(texto)
+    print("Intenção NLP:", intencao)
+
+    followup = resolver_followup(texto, memoria)
+    print("Followup:", followup)
+    
+    intencao = prever(texto)
+
+    followup = resolver_followup(texto, memoria)
+
+    # Só usa followup se NLP falhou
+    if followup and intencao in ["fallback", "desconhecido", None]:
+        intencao = followup
+
+    print("🎯 Intenção:", intencao)
+
+    # =========================
+    # 📚 CONSULTA DIRETA (AGORA SEGURA)
+    # =========================
+    if e_consulta_direta(texto) and tipo != "quantidade":
+        return [f"📚 Os livros da biblioteca são:\n{livros_lista()}"]
+
+    # =========================
+    # 🧠 INTENÇÕES MANUAIS
+    # =========================
+    if any(p in texto for p in ["horario", "horário", "funciona", "abre", "fecha"]):
+        config = ConfiguracaoSistema.objects.first()
+        if config and config.horario_funcionamento:
+            return [f"⏰ Horário da biblioteca:\n{config.horario_funcionamento}"]
+        return ["⏰ A biblioteca funciona das 08h às 17h."]
+
+    if "livros por categoria" in texto:
+        return [livros_por_categoria_geral()]
+
+    if "livros por autor" in texto:
+        return [livros_por_autor_geral()]
+    
+
+    # =========================
+    # 🔥 REGRA DIRETA AUTORES
+    # =========================
+    if "autor" in texto:
+        if any(p in texto for p in ["quais", "lista", "listar", "mostra"]):
+            return [f"Os autores são:\n{autores_lista()}"]
+
+    # =========================
+    # 🔥 REGRA DIRETA EXPOSIÇÕES
+    # =========================
+    if "exposições" in texto:
+        if any(p in texto for p in ["há", "quais", "lista", "listar", "mostra"]):
+            return [f"Os autores são:\n{exposicoes_lista()}"]
+
+
+    # =========================
+    # 🎯 INTENÇÕES NLP
+    # =========================
+    if intencao == "saudacao":
+        return ["Estou bem sim obrigado 😊 \n Como posso te ajudar?"]
+
+    if intencao == "saudacao_time":
+        hora = timezone.now().hour
+        if hora < 12:
+            return ["Bom dia 👋 Como posso te ajudar?"]
+        elif hora < 18:
+            return ["Boa tarde 👋 Como posso te ajudar?"]
+        return ["Boa noite 👋 Como posso te ajudar?"]
+
+    if intencao == "saudacao_breve":
+        return ["Olá 👋 Como posso te ajudar?"]
+
+    if intencao == "livros_lista":
+        return [f"Os livros 📚 da biblioteca são:\n{livros_lista()}"]
+
+    if intencao == "livros_qtd":
+        return [f"A biblioteca contém {Livro.objects.count()} livros 📚."]
+
+    if intencao == "livro_popular":
+        return [livro_mais_popular()]
+
+    if intencao == "livros_populares":
+        return [f"🔥 Os livros mais populares ou os mais requisitados são:\n{livros_populares()}"]
+
+    if intencao == "livros_menos_populares":
+        return [f"📉 Os livros menos populares ou os menos requisitados são:\n{livros_menos_populares()}"]
+
+    if intencao == "livro_menos_popular":
+        return [livro_menos_popular()]
+
+    if intencao == "livros_recentes":
+        return [f"📚 livros mais recentes:\n{livros_recentes()}"]
+
+    if intencao == "livro_recente":
+        return [livro_mais_recente()]
+
+    if intencao == "categoria_top":
+        return [categoria_top()]
+
+    if intencao == "categorias_recentes":
+        return [f"📂 As Categorias recentes são:\n{categorias_recentes()}"]
+    
+    if intencao == "categorias_populares":
+        return [f"📂 As Categorias populares ou as mais requisitadas são:\n{categorias_populares()}"]
+
+    if intencao == "categorias_poucas":
+        return [f"📂 Categorias com poucos livros:\n{categorias_poucos_livros()}"]
+
+    if intencao == "categoria_livro_recente":
+        return [categoria_livro_mais_recente()]
+
+    if intencao == "categoria_mais_requisitada":
+        return [categoria_mais_popular()]
+
+    if intencao == "categorias_qtd":
+        return [f"Existem {Categoria.objects.count()} categorias no acervo da biblioteca."]
+
+    if intencao == "categorias_lista":
+        return [f"As categorias existentes são:\n{categorias_lista()}"]
+
+    if intencao == "autor_top":
+        return [autor_top()]
+
+    if intencao == "autores_recentes":
+        return [f"👤 Os recentes autores são:\n{autores_recentes()}"]    
+    
+    if intencao == "autores_populares":
+        return [f"👤 Os Autores populares ou os mais requisitados são:\n{autores_populares()}"]
+
+    if intencao == "autores_poucos":
+        return [f"👤 Autores com poucas obras:\n{autores_poucos_livros()}"]
+
+    if intencao == "autor_livro_recente":
+        return [autor_livro_mais_recente()]
+
+    if intencao == "autor_mais_requisitado":
+        return [autor_mais_popular()]
+
+    if intencao == "autores_qtd":
+        return [f"Existem {Autor.objects.count()} autores no acervo da biblioteca."]
+
+    if intencao == "autores_lista":
+        return [f"Os autores são:\n{autores_lista()}"]
+
+    if intencao == "reservas_qtd":
+        return [f"Tens {Reserva.objects.filter(usuario=user).count()} reservas 📚."]
+
+    if intencao == "emprestimos_qtd":
+        return [f"Tens {Emprestimo.objects.filter(reserva__usuario=user).count()} empréstimos 📚."]
+    
+    if intencao == "exposicoes_lista":
+        return [f"As exposições 📚 da biblioteca são:\n{exposicoes_lista()}"]
+
+    if intencao == "exposicoes_qtd":
+        return [f"A biblioteca contém {Exposicao.objects.count()} exposições 📚."]
+
+    if intencao == "eventos_lista":
+        return [f"Os eventos 📚 da biblioteca são:\n{eventos_lista()}"]
+
+    if intencao == "eventos_qtd":
+        return [f"A biblioteca contém {Evento.objects.count()} eventos 📚."]
+
+    if intencao == "reserva":
+        return [pode_fazer_reserva(user)]
+    
+    if intencao == "emprestimo":
+        return [pode_fazer_emprestimo(user)]
+    
+    if intencao == "multas":
+        return [obter_regras_multa()]
+
+    if intencao == "poder_reservar":
+        return ["Apenas alunos e funcionários (professores) podem efectuar reservas"]
+    
+    if intencao == "poder_emprestar":
+        return ["Somente perfis do tipo funcionários (professores) podem realizar empréstimos"]
+
+
+    # =========================
+    # 🔥 EXTRAÇÃO DINÂMICA
+    # =========================
+    categoria_detectada = extrair_categoria(texto)
+    autor_detectado = extrair_autor(texto)
+
+    if categoria_detectada:
+        return [f"📂 Livros da categoria {categoria_detectada}:\n{livros_por_categoria_nome(categoria_detectada)}"]
+
+    if autor_detectado:
+        return [f"👤 Livros do autor {autor_detectado}:\n{livros_por_autor_nome(autor_detectado)}"]
+
+    # =========================
+    # 🔎 RAG CONTROLADO
+    # =========================
+    if e_pedido_rag_seguro(texto):
+        resultados = buscar_livros(texto)
+
+        if resultados:
+            resposta = "📚 Encontrei estes livros relacionados:\n"
+            resposta += "\n".join(f"• {r['livro'].titulo}" for r in resultados)
+            return [resposta]
+
+    # =========================
+    # ❌ FALLBACK
+    # =========================
+    return ["🤔 Não entendi bem. Podes reformular a pergunta?"]
+
+
+# =========================
+# 🧠 MULTI-INTENÇÃO
+# =========================
+def processar(texto, user, chat):
+    perguntas = dividir_perguntas(texto)
+
+    respostas = []
+
+    for p in perguntas:
+        print("🧩 Pergunta:", p)
+        resp = processar_pergunta_unica(p, user, chat)
+        if resp:
+            respostas.extend(resp)
+
+    respostas = list(dict.fromkeys(respostas))
+
+    return respostas if respostas else ["🤔 Não entendi bem."]
+
+
+# =========================
+# 🤖 RESPOSTA FINAL
+# =========================
+def gerar_resposta(pergunta, user, chat):
+    perfil = Perfil.objects.filter(user=user).first()
+    nome = perfil.nome.split()[0] if perfil and perfil.nome else user.username
+
+    respostas = processar(pergunta, user, chat)
+
+    return f"{nome} 😊\n" + "\n".join(respostas)
+
+
+# celery -A bibliotecaipil worker --loglevel=info --pool=solo
+# celery -A bibliotecaipil beat --loglevel=info
+
+
+
+############################################################################
+                                MEU SERVICES NOVO
+############################################################################
+import re
+from django.utils import timezone
+from django.db.models import Count
+
+from administracao.models import ConfiguracaoSistema
+from accounts.models import Perfil
+from livros.models import (
+    Reserva, Livro, Emprestimo, Categoria,
+    Autor, Exposicao, Evento
+)
+
+from .memory import obter_memoria_inteligente, resolver_followup
+from .nlp_model import prever, normalizar, reduzir_repeticoes
+from .rag_engine import buscar_livros
+
+
+# =====================================================
+# 🧹 UTILITÁRIOS
+# =====================================================
+
+def limpar_texto(texto):
+    texto = normalizar(texto)
+    return reduzir_repeticoes(texto).strip()
+
+
+def dividir_perguntas(texto):
+    return [
+        p.strip()
+        for p in re.split(r"[?.,;]| e | também | alem disso | depois |\n", texto)
+        if len(p.strip()) > 1
+    ]
+
+
+def formatar_lista(qs, campo="titulo", vazio="Sem resultados."):
+    itens = list(qs)
+    if not itens:
+        return vazio
+
+    return "\n".join(
+        f"• {getattr(i, campo)}"
+        for i in itens if getattr(i, campo, None)
+    )
+
+
+# =====================================================
+# 📚 BASE
+# =====================================================
+
+# =========================
+# 🔍 MATCH INTELIGENTE
+# =========================
+def extrair_categoria(texto):
+    categorias = list(Categoria.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, categorias)
+    return match[0] if match and match[1] > 70 else None
+
+
+def extrair_autor(texto):
+    autores = list(Autor.objects.values_list("nome", flat=True))
+    match = process.extractOne(texto, autores)
+    return match[0] if match and match[1] > 70 else None
+
+
+# =========================
+# 📚 LISTAGENS
+# =========================
+def livros_por_categoria_geral():
+    return "\n".join(
+        f"\n📂 {c.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(categoria=c))
+        for c in Categoria.objects.all()
+        if Livro.objects.filter(categoria=c).exists()
+    ) or "Sem dados."
+
+
+def livros_por_autor_geral():
+    return "\n".join(
+        f"\n👤 {a.nome}:\n" +
+        "\n".join(f"• {l.titulo}" for l in Livro.objects.filter(autor=a))
+        for a in Autor.objects.all()
+        if Livro.objects.filter(autor=a).exists()
+    ) or "Sem dados."
+
+
+def livros_lista():
+    return "\n".join(f"• {l.titulo}" for l in Livro.objects.all()) or "Sem livros."
+
+
+# =========================
+# 🔥 FILTROS DINÂMICOS
+# =========================
+def livros_por_categoria_nome(nome):
+    livros = Livro.objects.filter(categoria__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+def livros_por_autor_nome(nome):
+    livros = Livro.objects.filter(autor__nome__icontains=nome)
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Nenhum livro encontrado."
+
+
+# =========================
+# 📊 ESTATÍSTICAS
+# =========================
+def livros_recentes(limit=4):
+    livros = Livro.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem livros."
+
+
+def livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📚 O livro mais recente é: {livro.titulo}" if livro else "Sem livros."
+
+
+def livros_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📚 O livro mais popular ou o mais popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def livros_menos_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("total")[:limit]
+    return "\n".join(f"• {l.titulo}" for l in livros) or "Sem dados."
+
+
+def livro_menos_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("total").first()
+    return f"📚 O livro menos requisitado ou o menso popular é: {livro.titulo}" if livro else "Sem dados."
+
+
+def categorias_lista():
+    return "\n".join(f"• {c.nome}" for c in Categoria.objects.all()) or "Sem categorias."
+
+
+def categoria_top():
+    categoria = Categoria.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"📂 A categoria com mais livros é: {categoria.nome}" if categoria else "Sem dados."
+
+
+def categorias_recentes(limit=4):
+    categoria = Categoria.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categoria) or "Sem categorias."
+
+
+def categorias_poucos_livros(limit=4):
+    categorias = Categoria.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {c.nome}" for c in categorias) or "Sem dados."
+
+
+def categoria_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"📂 A categoria com o livro mais recente é: {livro.categoria.nome}" if livro else "Sem livros."
+
+
+def categorias_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.categoria.nome}" for l in livros) or "Sem dados."
+
+
+def categoria_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"📂 A categoria mais popular ou a mais requisitada é: {livro.categoria.nome}" if livro else "Sem dados."
+
+
+def autores_lista():
+    return "\n".join(f"• {a.nome}" for a in Autor.objects.all()) or "Sem autores."
+
+
+def autor_top():
+    autor = Autor.objects.annotate(total=Count("livros")).order_by("-total").first()
+    return f"👤 O autor com mais obras é: {autor.nome}" if autor else "Sem dados."
+
+
+def autores_recentes(limit=4):
+    autores = Autor.objects.order_by("-created_at")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem autores."
+
+
+def autores_poucos_livros(limit=4):
+    autores = Autor.objects.annotate(total=Count("livros")).order_by("total")[:limit]
+    return "\n".join(f"• {a.nome}" for a in autores) or "Sem dados."
+
+
+def autor_livro_mais_recente():
+    livro = Livro.objects.order_by("-created_at").first()
+    return f"👤 O Autor com o livro mais recente é: {livro.autor.nome}" if livro else "Sem livros."
+
+
+def autores_populares(limit=4):
+    livros = Livro.objects.annotate(total=Count("reservas")).order_by("-total")[:limit]
+    return "\n".join(f"• {l.autor.nome}" for l in livros) or "Sem dados."
+
+
+def autor_mais_popular():
+    livro = Livro.objects.annotate(total=Count("reservas")).order_by("-total").first()
+    return f"👤 O Autor mais popular é: {livro.autor.nome}" if livro else "Sem dados."
+
+
+def exposicoes_lista():
+    return "\n".join(f"• {e.titulo}" for e in Exposicao.objects.all()) or "Sem exposições."
+
+
+def eventos_lista():
+    return "\n".join(f"• {e.titulo}" for e in Evento.objects.all()) or "Sem eventos."
+
+
+
+# =====================================================
+# 🔐 PERMISSÕES
+# =====================================================
+
+def obter_perfil(user):
+    return Perfil.objects.filter(user=user).first()
+
+
+#🧠 1. DETECTAR TIPO DE PERFIL (ESSENCIAL)
+def tipo_perfil(perfil):
+    if hasattr(perfil, "aluno_oficial"):
+        return "aluno_oficial"
+    
+    if hasattr(perfil, "funcionario_oficial"):
+        return "funcionario_oficial"
+    
+    return "desconhecido"
+
+
+#🎯 2. QUEM PODE FAZER EMPRÉSTIMOS
+def pode_fazer_reserva(user):
+    perfil = Perfil.objects.filter(user=user).first()
+
+    if not perfil:
+        return False, "Perfil não encontrado."
+
+    tipo = tipo_perfil(perfil)
+
+    if tipo in ["aluno_oficial", "funcionario_oficial"]:
+        if perfil.estado == "Suspenso":
+            return False, "❌ O teu perfil está suspenso devido a atrasos."
+
+        return True, "✅ Podes fazer reservas."
+
+    return False, "❌ O teu tipo de perfil não pode fazer reservas."
+
+
+def pode_fazer_emprestimo(user):
+    perfil = Perfil.objects.filter(user=user).first()
+
+    if not perfil:
+        return False, "Perfil não encontrado."
+
+    tipo = tipo_perfil(perfil)
+
+    if tipo == "funcionario_oficial":
+        if perfil.estado == "Suspenso":
+            return False, "❌ O teu perfil está suspenso devido a atrasos."
+
+        return True, "✅ Podes fazer empréstimos."
+
+    return False, "❌ O teu tipo de perfil não pode fazer empréstimos."
+
+# =====================================================
+# 💰 CONFIGURAÇÕES
+# =====================================================
+
+def obter_regras_multa():
+    c = ConfiguracaoSistema.objects.first()
+    if not c:
+        return "Sem configuração."
+
+    return (
+        f"💰 Atraso: {c.multa_por_dia} Kz/dia\n"
+        f"💥 Dano: {c.multa_por_dano} Kz\n"
+        f"📕 Perda: {c.multa_por_perda} Kz"
+    )
+
+
+def obter_regras_emprestimo():
+    c = ConfiguracaoSistema.objects.first()
+    if not c:
+        return "Sem configuração."
+
+    return (
+        f"📚 Duração: {c.dias_emprestimo} dias\n"
+        f"📦 Limite: {c.limite_livros_estudante}"
+    )
+
+
+# =====================================================
+# 🧠 CONFIDENCIAL
+# =====================================================
+
+def consultas_confidenciais(user, intencao):
+    perfil = tipo_perfil(user)
+
+    if not perfil:
+        return None
+
+    if perfil == "funcionario_oficial":
+        if intencao == "relatorio_alunos":
+            from accounts.models import AlunoOficial
+            return [f"👨‍🎓 O Total de alunos é: {AlunoOficial.objects.count()}"]
+
+        if intencao == "relatorio_funcionarios":
+            from accounts.models import FuncionarioOficial
+            return [f"👨‍🏫 O Total de funcionários é: {FuncionarioOficial.objects.count()}"]
+
+        if intencao == "emprestimos_ativos":
+            total = Emprestimo.objects.filter(acoes="ativo").count()
+            return [f"📦 Os Empréstimos ativos são: {total}"]
+
+    return None
+
+
+# =====================================================
+# 🔥 RECOMENDAÇÃO
+# =====================================================
+
+def recomendar_livros(texto):
+    q = {}
+
+    for p in texto.split():
+        q[p] = True
+
+    livros = Livro.objects.all()[:6]
+
+    return "📚 Recomendações:\n" + "\n".join(f"• {l.titulo}" for l in livros)
+
+
+def recomendar_categoria(nome):
+    livros = Livro.objects.filter(categoria__nome__icontains=nome)
+    return "📚 Por categoria:\n" + formatar_lista(livros)
+
+
+def recomendar_autor(nome):
+    livros = Livro.objects.filter(autor__nome__icontains=nome)
+    return "📚 Por autor:\n" + formatar_lista(livros)
+
+
+def recomendar_descricao(texto):
+    res = buscar_livros(texto)
+    if not res:
+        return "Sem recomendações."
+    return "📚 Por descrição:\n" + "\n".join(f"• {r['livro'].titulo}" for r in res)
+
+
+# =====================================================
+# 🧠 INTENT REGISTRY (SEM LÓGICA ESPALHADA)
+# =====================================================
+
+INTENT_MAP = {
+
+    # SAUDAÇÕES
+    "saudacao": lambda u: "Estou bem 😊 Como posso ajudar?",
+    "saudacao_breve": lambda u: "Olá 👋 Como posso ajudar?",
+    "saudacao_time": lambda u: (
+        "Bom dia 👋" if timezone.now().hour < 12 else
+        "Boa tarde 👋" if timezone.now().hour < 18 else
+        "Boa noite 👋"
+    ) + " Como posso ajudar?",
+
+    # LIVROS
+    "livros_lista": lambda u: livros_lista(),
+    "livros_qtd": lambda u: f"{Livro.objects.count()} livros.",
+    "livro_recente": lambda u: livro_mais_recente(),
+    "livro_popular": lambda u: livro_mais_popular(),
+    "livro_menos_popular": lambda u: livro_menos_popular(),
+    "livros_recentes": lambda u: livros_recentes(),
+    "livros_populares": lambda u: livros_populares(),
+    "livros_menos_populares": lambda u: livros_menos_populares(),
+
+    # CATEGORIAS
+    "categorias_lista": lambda u: categorias_lista(),
+    "categorias_qtd": lambda u: f"{Categoria.objects.count()} categorias.",
+    "categoria_top": lambda u: categoria_top(),
+    "categorias_recentes": lambda u: categorias_recentes(),
+    "categorias_populares": lambda u: categorias_populares(),
+    "categorias_poucas": lambda u: categorias_poucos_livros(),
+    "categoria_livro_recente": lambda u: categoria_livro_mais_recente(),
+    "categoria_mais_requisitada": lambda u: categoria_mais_popular(),
+    
+
+    # AUTORES
+    "autores_lista": lambda u: autores_lista(),
+    "autores_qtd": lambda u: f"{Autor.objects.count()} autores.",
+    "autor_top": lambda u: autor_top(),
+    "autores_recentes": lambda u: autores_recentes(),
+    "autores_populares": lambda u: autores_populares(),
+    "autores_poucos": lambda u: autores_poucos_livros(),
+    "autor_livro_recente": lambda u: autor_livro_mais_recente(),
+    "autor_mais_requisitado": lambda u: autor_mais_popular(),
+
+
+    # EVENTOS
+    "exposicoes_lista": lambda u: exposicoes_lista(),
+    "exposicoes_qtd": lambda u: f"{Exposicao.objects.count()} exposições.",
+    "eventos_lista": lambda u: eventos_lista(),
+    "eventos_qtd": lambda u: f"{Evento.objects.count()} eventos.",
+
+    # CONTAGEM
+    "reservas_qtd": lambda u: f"{Reserva.objects.filter(usuario=u).count()} reservas.",
+    "emprestimos_qtd": lambda u: f"{Emprestimo.objects.filter(reserva__usuario=u).count()} empréstimos.",
+
+    # REGRAS
+    "multas": lambda u: obter_regras_multa(),
+    "regras_emprestimo": lambda u: obter_regras_emprestimo(),
+
+    # PERMISSÕES (DA TUA VERSÃO ANTIGA RESTAURADA)
+    "poder_reservar": lambda u: "Apenas alunos e funcionários podem reservar.",
+    "poder_emprestar": lambda u: "Somente funcionários podem emprestar livros.",
+    
+
+}
+
+
+# =====================================================
+# 🧠 CORE ENGINE
+# =====================================================
+
+def responder_intencao(intencao, texto, user):
+    func = INTENT_MAP.get(intencao)
+    return func(user) if func else None
+
+
+# =====================================================
+# 🧠 PROCESSAMENTO
+# =====================================================
+
+def processar_pergunta_unica(texto, user, chat):
+
+    memoria = obter_memoria_inteligente(chat)
+
+    texto = limpar_texto(texto)
+
+    intencao = prever(texto)
+
+    # 🔐 CONFIDENCIAL (BASEADO EM INTENÇÃO, NÃO TEXTO)
+    conf = consultas_confidenciais(user, intencao)
+    if conf:
+        return conf
+
+    followup = resolver_followup(texto, memoria)
+
+    # Só usa followup se NLP falhou
+    if followup and intencao in ["fallback", "desconhecido", None]:
+        intencao = followup
+
+    print("🎯 INTENÇÃO:", intencao)
+
+    # 1️⃣ INTENT ENGINE
+    resposta = responder_intencao(intencao, texto, user)
+    if resposta:
+        return [resposta]
+
+    # 2️⃣ PERMISSÕES NATURAIS
+    if "quem pode reservar" in texto:
+        return ["Apenas alunos e funcionários podem reservar."]
+
+    if "quem pode emprestar" in texto:
+        return ["Somente funcionários podem emprestar livros."]
+
+    # 3️⃣ RAG FALLBACK
+    resultados = buscar_livros(texto)
+    if resultados:
+        return [
+            "📚 Encontrei:\n" +
+            "\n".join(f"• {r['livro'].titulo}" for r in resultados[:5])
+        ]
+
+    return ["🤔 Não entendi."]
+
+
+# =====================================================
+# 🔁 MULTI PERGUNTAS
+# =====================================================
+
+def processar(texto, user, chat):
+
+    perguntas = dividir_perguntas(texto)
+
+    respostas = []
+
+    for p in perguntas:
+        print("🧩 Pergunta:", p)
+        resp = processar_pergunta_unica(p, user, chat)
+        respostas.extend(resp)
+
+    return list(dict.fromkeys(respostas))
+
+
+# =====================================================
+# 🤖 RESPOSTA FINAL
+# =====================================================
+
+def gerar_resposta(pergunta, user, chat):
+
+    perfil = obter_perfil(user)
+
+    nome = perfil.nome.split()[0] if perfil and perfil.nome else user.username
+
+    respostas = processar(pergunta, user, chat)
+
+    return f"{nome} 😊\n" + "\n".join(respostas)

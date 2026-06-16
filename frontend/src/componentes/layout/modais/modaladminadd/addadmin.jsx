@@ -7,8 +7,7 @@ function ModalAddAdmin({ onClose, onSuccess }) {
 
     const [form, setForm] = useState({
         username: "",
-        password: "",
-        grupo: "", // mantém UI
+        grupo: "",
     });
 
     const [loading, setLoading] = useState(false);
@@ -25,71 +24,60 @@ function ModalAddAdmin({ onClose, onSuccess }) {
         });
     };
 
-    // 🔥 FUNÇÃO PARA MAPEAR DADOS PARA O BACKEND
     const montarPayload = () => {
-        if (form.grupo === "issuperuser") {
-            return {
-                username: form.username,
-                password: form.password,
-                is_superuser: true,
-                grupos: []
-            };
-        }
-
         return {
             username: form.username,
-            password: form.password,
-            is_superuser: false,
             grupos: [form.grupo]
         };
     };
-
-    // 🔥 FUNÇÃO PARA TEXTO DINÂMICO
-    const getTipoUsuario = () => {
-        if (form.grupo === "issuperuser") return "Superusuário";
-        if (form.grupo === "Admin") return "Administrador";
-        if (form.grupo === "Bibliotecario") return "Bibliotecário";
-        return "Usuário";
-    };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!form.username || !form.grupo) {
+            alert("Seleciona utilizador e grupo");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const payload = montarPayload();
-
-            await api.post("/admin/users/", payload);
+            await api.post("/admin/users/promote/", {
+                username: form.username,
+                grupos: [form.grupo]
+            });
 
             setModal({
                 open: true,
                 type: "success",
-                message: `${getTipoUsuario()} cadastrado com sucesso!`,
+                message: "Utilizador promovido com sucesso!"
             });
 
             setForm({
                 username: "",
-                password: "",
-                grupo: "Admin",
+                grupo: ""
             });
 
-            if (onSuccess) onSuccess();
+            onSuccess?.();
 
         } catch (err) {
-            const msg = err.response?.data
-                ? Object.values(err.response.data).flat().join(" ")
-                : "Erro ao criar utilizador";
+            const msg =
+                err.response?.data
+                    ? Object.values(err.response.data).flat().join(" ")
+                    : "Erro ao promover utilizador";
 
             setModal({
                 open: true,
                 type: "error",
-                message: msg,
+                message: msg
             });
 
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <>
@@ -119,23 +107,13 @@ function ModalAddAdmin({ onClose, onSuccess }) {
                             className="w-full px-3 py-2 border border-black/10 outline-none rounded-lg"
                         />
 
-                        <input
-                            type="password"
-                            name="password"
-                            value={form.password}
-                            onChange={handleChange}
-                            placeholder="Password"
-                            required
-                            className="w-full px-3 py-2 border border-black/10 outline-none rounded-lg"
-                        />
-
                         <select
                             name="grupo"
                             value={form.grupo}
                             onChange={handleChange}
                             className="w-full px-3 py-2 border border-black/10 cursor-pointer outline-none rounded-lg"
                         >
-                            <option value="">Todos os grupos</option>
+                            <option value="">Selecionar grupo</option>
                             <option value="issuperuser">Super User</option>
                             <option value="Admin">Admin</option>
                             <option value="Bibliotecario">Bibliotecário</option>
@@ -188,3 +166,5 @@ function ModalAddAdmin({ onClose, onSuccess }) {
 }
 
 export default ModalAddAdmin;
+
+

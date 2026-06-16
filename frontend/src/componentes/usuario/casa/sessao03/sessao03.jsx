@@ -1,6 +1,7 @@
 import { FiArrowRight} from "react-icons/fi";
 import { motion } from "framer-motion";
-import CardLivro from "../../cards/cardsLivros/livro";
+import CardLivro from "../../cards/cardsLivros/cardsLivroHome/livro";
+
 
 
 function Sessao03() {
@@ -25,7 +26,7 @@ function Sessao03() {
           </div>
       </div>
       
-      <CardLivro props="popular"/>
+      <CardLivro/>
     </motion.div>
   );
 }

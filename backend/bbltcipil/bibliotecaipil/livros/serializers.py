@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.apps import apps
 from django.utils import timezone
-from .models import Livro, Autor, Categoria, Reserva, Emprestimo, Notificacao, Exposicao, Evento, Participacao
-from .service import reservar_exposicao, reservar_evento
+from .models import Livro, Autor, Categoria, Reserva, Emprestimo, Notificacao, Exposicao, Reserva_Exposicao
+from administracao.models import ConfiguracaoSistema
+
 
 # ==============================
 # LIVRO
@@ -181,6 +182,13 @@ class EmprestimoSerializer(serializers.ModelSerializer):
 
 
 
+class ConfiguracaoSistemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConfiguracaoSistema
+        fields = "__all__"
+
+
+
 # ==============================
 # NOTIFICAÇÃO
 # ==============================
@@ -192,22 +200,56 @@ class NotificacaoSerializer(serializers.ModelSerializer):
 
 
 class ExposicaoSerializer(serializers.ModelSerializer):
+
     vagas_disponiveis = serializers.SerializerMethodField()
+
     descricao_estado = serializers.SerializerMethodField()
+
+    estado = serializers.SerializerMethodField()
 
     class Meta:
         model = Exposicao
-        fields = '__all__'
+
+        fields = [
+            'id',
+            'titulo',
+            'capa',
+            'descricao',
+            'local',
+            'capacidade_maxima',
+            'vagas_disponiveis',
+            'estado',
+            'descricao_estado',
+            'data_inicio',
+            'data_fim',
+        ]
+
+    # ==========================
+    # 🔹 VAGAS
+    # ==========================
 
     def get_vagas_disponiveis(self, obj):
+
         return obj.vagas_disponiveis()
 
+    # ==========================
+    # 🔹 ESTADO REAL
+    # ==========================
+
+    def get_estado(self, obj):
+
+        return obj.estado_atual()
+
+    # ==========================
+    # 🔹 DESCRIÇÃO
+    # ==========================
+
     def get_descricao_estado(self, obj):
+
         return obj.descricao_estado()
 
 
-
-class EventoSerializer(serializers.ModelSerializer):
+""" class EventoSerializer(serializers.ModelSerializer):
     vagas_disponiveis = serializers.SerializerMethodField()
     descricao_estado = serializers.SerializerMethodField()
 
@@ -219,42 +261,91 @@ class EventoSerializer(serializers.ModelSerializer):
         return obj.vagas_disponiveis()
 
     def get_descricao_estado(self, obj):
-        return obj.descricao_estado()
+        return obj.descricao_estado() """
 
+        
 
-class ParticipacaoSerializer(serializers.ModelSerializer):
-    exposicao = ExposicaoSerializer(read_only=True)
-    evento = EventoSerializer(read_only=True)
+""" class ExposicaoReservadaSerializer(serializers.ModelSerializer):
+    exposicao = serializers.CharField(source='exposicao.titulo', read_only=True)
+    estado = serializers.CharField(source='exposicao.estado', read_only=True)
 
-    # 👇 campos para escrita (IDs)
-    exposicao_id = serializers.IntegerField(write_only=True, required=False)
-    evento_id = serializers.IntegerField(write_only=True, required=False)
+    usuario = serializers.CharField(source='usuario.first_name', read_only=True)
+
+    usuario_grupos = serializers.SerializerMethodField()
 
     class Meta:
-        model = Participacao
-        fields = '__all__'
-        read_only_fields = ['usuario', 'data_registro']
+        model = Reserva_Exposicao
+        fields = [
+            'id',
+            'exposicao',
+            'usuario',
+            'usuario_grupos',
+            'estado',
+            'data_reserva'
+        ]
 
-    def validate(self, attrs):
-        exposicao_id = attrs.get('exposicao_id')
-        evento_id = attrs.get('evento_id')
+    def get_usuario_grupos(self, obj):
+        return list(
+            obj.usuario.groups.values_list('name', flat=True)
+        ) """
 
-        if not exposicao_id and not evento_id:
-            raise serializers.ValidationError("Deves fornecer uma exposição ou um evento.")
+class ExposicaoReservadaSerializer(serializers.ModelSerializer):
 
-        if exposicao_id and evento_id:
-            raise serializers.ValidationError("Escolhe apenas exposição OU evento, não ambos.")
+    exposicao = serializers.CharField(source='exposicao.titulo', read_only=True)
 
-        return attrs
+    usuario = serializers.CharField(source='usuario.first_name', read_only=True)
+    usuario_username = serializers.CharField(source='usuario.username', read_only=True)
+    curso = serializers.CharField(source='usuario_grupos.aluno.curso', read_only=True)
+    classe = serializers.CharField(source='usuario_grupos.aluno.classe', read_only=True)
 
-    def create(self, validated_data):
-        usuario = self.context['request'].user
+    estado = serializers.CharField(read_only=True)
 
-        exposicao_id = validated_data.pop('exposicao_id', None)
-        evento_id = validated_data.pop('evento_id', None)
+    usuario_grupos = serializers.SerializerMethodField()
 
-        if exposicao_id:
-            return reservar_exposicao(usuario, exposicao_id)
+    data_participacao = serializers.DateTimeField(read_only=True)
 
-        if evento_id:
-            return reservar_evento(usuario, evento_id)
+    class Meta:
+        model = Reserva_Exposicao
+
+        fields = [
+            'id',
+            'exposicao',
+            'usuario',
+            'curso',
+            'classe',
+            'usuario_username',
+            'usuario_grupos',
+            'estado',
+            'data_reserva',
+            'data_participacao'
+        ]
+
+    # ==========================
+    # 🔹 GRUPOS DO USUÁRIO
+    # ==========================
+    def get_usuario_grupos(self, obj):
+
+        return list(obj.usuario.groups.values_list('name', flat=True))
+
+
+""" class EventoReservadoSerializer(serializers.ModelSerializer):
+    usuarios = serializers.SerializerMethodField()
+    total_reservas = serializers.ImageField(source='reservas.count', read_only=True)
+ 
+    class Meta:
+        model = Evento
+        fields = [
+            'id', 'titulo', 'capa', 'estado', 'capacidade_maxima',
+            'vagas_disponiveis', 'total_reservas', 'usuarios' 
+        ]
+
+    def get_usuarios(self, obj):
+        return [
+            {
+                'id': reserva.usuario.id,
+                'username': reserva.usuario.username,
+                'email': reserva.usuario.email,
+                'data_reserva': reserva.data_reserva
+            }
+            for reserva in obj.reservas.all()
+        ] """

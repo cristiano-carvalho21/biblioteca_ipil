@@ -4,3 +4,40 @@ def get_permissions(self):
     if self.action in ['list', 'retrieve']:
         return [IsAuthenticated()]  # ou admin se quiseres restringir
     return [IsAdminUser()]
+
+
+    ##########################
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.exceptions import ValidationError, PermissionDenied
+
+class ParticipacaoViewSet(viewsets.ModelViewSet):
+    serializer_class = ParticipacaoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Participacao.objects.filter(
+            usuario=self.request.user
+        ).order_by('-data_registro')
+
+    @action(detail=True, methods=['post'])
+    def cancelar(self, request, pk=None):
+        participacao = self.get_object()
+
+        try:
+            cancelar_participacao(participacao, request.user)
+
+            return Response(
+                {"mensagem": "Cancelado com sucesso."},
+                status=status.HTTP_200_OK
+            )
+
+        except PermissionDenied as e:
+            return Response({"erro": str(e)}, status=403)
+
+        except Exception as e:
+            return Response({"erro": str(e)}, status=400)
+
+
+await api.post(`/livros/participacoes/${id}/cancelar/`);

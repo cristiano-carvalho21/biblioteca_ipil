@@ -1,6 +1,6 @@
 from celery import shared_task
 from django.utils import timezone
-from .models import Exposicao, Evento
+from .models import Exposicao
 from .events import emit_event
 
 
@@ -24,7 +24,7 @@ def encerrar_exposicoes():
     return f"{exposicoes.count()} encerradas."
 
 
-@shared_task
+""" @shared_task
 def encerrar_eventos():
     agora = timezone.now()
 
@@ -55,4 +55,4 @@ def atualizar_estados():
 
     for ev in eventos:
         ev.atualizar_estado()
-        ev.save()
+        ev.save() """

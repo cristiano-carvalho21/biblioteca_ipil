@@ -47,5 +47,4 @@ function Exposicao() {
         </div>
     )
 }
-
 export default Exposicao;

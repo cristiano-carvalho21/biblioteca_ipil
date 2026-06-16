@@ -1,4 +1,4 @@
-
+from django.contrib.contenttypes.models import ContentType
 
 class AuditService:
     @staticmethod

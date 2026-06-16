@@ -5,7 +5,7 @@ import TabFuncionario from "../../layout/tables/tabfuncionario/tabfuncionario";
 import Tabs from "../../layout/tables/tabs/tabs";
 import { motion } from "framer-motion";
 
-function Estudantes(){
+function Perfis(){
     
     const tabs = [
         {label: "Alunos", content: <TabAluno />},
@@ -30,4 +30,4 @@ function Estudantes(){
         </motion.main>
     );
 }
-export default Estudantes;
+export default Perfis;

@@ -1,6 +1,5 @@
-
 import { NavLink } from "react-router-dom";
-
+import LogoIPIL from "../../../../assets/ipillogo.png";
 import {LuBookOpen} from "react-icons/lu";
 import {MdOutlineHome, MdPersonOutline, MdAdminPanelSettings} from "react-icons/md";
 import {IoCalendarClearOutline} from "react-icons/io5";
@@ -8,6 +7,7 @@ import {GiGreekTemple} from "react-icons/gi";
 import {RiBookShelfLine} from "react-icons/ri"
 import { motion } from "framer-motion";
 import { useAuth } from "../../../auth/userAuth/useauth";
+
 
 function Cabecalho() {
    const { user } = useAuth(); // pega o usuário autenticado
@@ -48,7 +48,7 @@ function Cabecalho() {
             <div className="flex justify-between px-5 py-3 items-center w-full">
 
                 <div className="flex items-center gap-1">
-                    <LuBookOpen className="bg-[#f97b17] text-white p-1.5 size-10 rounded-sm"/>
+                    <img src={LogoIPIL} alt="" className="w-18 h-18"/>
                     <div className="flex flex-col gap-0">
                         <h2 className="text-[#f97b17] text-xl">IPIL
                             <span className="text-sm text-black/60 block">Biblioteca</span>

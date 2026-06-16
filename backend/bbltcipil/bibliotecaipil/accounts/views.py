@@ -1,3 +1,328 @@
+""" from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import SignupSerializer, LoginSerializer, AlterarSenhaSerializer
+from .models import Perfil
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
+from django.http import JsonResponse
+import json
+import os
+import requests
+
+User = get_user_model()
+
+
+# =====================================================
+# SIGNUP - Ativação de Conta
+# =====================================================
+
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "mensagem": "Conta criada com sucesso."
+        }, status=status.HTTP_201_CREATED)
+
+
+class RefreshTokenView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "Não autenticado"}, status=401)
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            user_id = refresh["user_id"]
+            user = User.objects.filter(id=user_id).first()
+
+            # 🔐 Rotacionar refresh token
+            response = Response({
+                "access": access_token,
+                "user": {
+                    "id": user.id if user else None,
+                    "username": user.username if user else None
+                }
+            })
+
+            # Atualiza cookie refresh
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,  # True em produção
+                samesite="Lax",
+                max_age=7*24*60*60
+            )
+
+            return response
+
+        except Exception:
+            return Response({"error": "Token inválido"}, status=401)   
+
+
+# =====================================================
+# LOGIN - n_processo + senha
+# =====================================================
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        refresh = serializer.validated_data["refresh"]
+
+        response = Response({
+            "message": "Login efetuado com sucesso",
+            "user": serializer.validated_data["user"]
+        }, status=200)
+
+        # Cookie HttpOnly para cross-domain
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh,
+            httponly=True,
+            secure=False,   # True em produção com HTTPS
+            samesite="Lax", # 🔥 cross-domain
+            max_age=7*24*60*60
+        )
+
+        return response
+    
+
+# =====================================================
+# LOGOUT
+# =====================================================
+
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        response = Response({"message": "Logout efetuado"})
+        response.delete_cookie("refresh_token")
+        return response
+
+
+# =====================================================
+# ME - Dados do usuário autenticado
+# =====================================================
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return self._get_data(request.user)
+
+    def put(self, request):
+        return self._update_user(request.user, request.data)
+
+    def patch(self, request):
+        return self._update_user(request.user, request.data, partial=True)
+
+    def _update_user(self, user, data, partial=False):
+        perfil = getattr(user, "perfil", None)
+
+        email = data.get("email")
+        telefone = data.get("telefone")
+
+        if email:
+            user.email = email
+            user.save(update_fields=["email"])
+
+        if telefone and perfil:
+            perfil.telefone = telefone
+            perfil.save(update_fields=["telefone"])
+
+        return self._get_data(user)
+
+    def _get_data(self, user):
+        perfil = getattr(user, "perfil", None)
+
+        grupos = list(user.groups.values_list("name", flat=True))
+
+        dados_oficiais = {}
+        perfil_data = {}
+
+        ao = getattr(perfil, "aluno_oficial", None) if perfil else None
+        fo = getattr(perfil, "funcionario_oficial", None) if perfil else None
+
+        if perfil:
+            if "Aluno" in grupos and ao:
+                dados_oficiais = {
+                    "n_processo": ao.n_processo,
+                    "nome_completo": ao.nome_completo,
+                    "curso": ao.curso,
+                    "classe": ao.classe,
+                    "data_nascimento": ao.data_nascimento,
+                    "idade": ao.idade,
+                    "n_bilhete": ao.n_bilhete,
+                }
+
+            elif "Funcionario" in grupos and fo:
+                dados_oficiais = {
+                    "n_agente": fo.n_agente,
+                    "nome": fo.nome,
+                    "cargo": fo.cargo,
+                    "n_bilhete": fo.n_bilhete,
+                }
+
+            perfil_data = {
+                "telefone": perfil.telefone,
+                "estado": perfil.estado,
+                "n_reservas": perfil.n_reservas,
+                "n_emprestimos": perfil.n_emprestimos
+            }
+
+        else:
+            perfil_data = {
+                "telefone": None,
+                "estado": "ativo",
+                "n_reservas": 0,
+                "n_emprestimos": 0
+            }
+
+        return Response({
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "is_superuser": user.is_superuser,
+                "grupos": grupos
+            },
+            "perfil": perfil_data,
+            "dados_oficiais": dados_oficiais,
+        })
+
+
+class AlterarSenhaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        serializer = AlterarSenhaSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        if serializer.is_valid():
+
+            user = request.user
+            nova_senha = serializer.validated_data["nova_senha"]
+
+            user.set_password(nova_senha)
+            user.save()
+
+            return Response(
+                {"detail": "Senha alterada com sucesso."},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+def password_reset_request(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        email = data.get("email")
+    except Exception:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+
+    if not email:
+        return JsonResponse({"error": "Email é obrigatório"}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Email não encontrado"}, status=404)
+
+    token = default_token_generator.make_token(user)
+    uid = user.pk
+    reset_link = f"http://localhost:5173/reset-password/{uid}/{token}"
+
+    # Envia email via Brevo API
+    headers = {
+        "accept": "application/json",
+        "api-key": os.getenv("BREVO_API_KEY"),
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "sender": {"name": "Biblioteca IPIL", "email": "celsocundiati@gmail.com"},
+        "to": [{"email": email}],
+        "subject": "Recuperação de senha - Biblioteca IPIL",
+         "htmlContent": f
+        #     <h2>Recuperação de senha</h2>
+        #     <p>Clique no botão abaixo para redefinir sua senha:</p>
+        #     <a href="{reset_link}" style="
+        #         padding:10px 20px;
+        #         background:#2563eb;
+        #         color:white;
+        #         text-decoration:none;
+        #         border-radius:5px;
+        #     ">Redefinir senha</a>
+        
+    }
+    response = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+    if response.status_code != 201 and response.status_code != 200:
+        return JsonResponse({"error": "Falha ao enviar email", "details": response.json()}, status=500)
+
+    return JsonResponse({"message": "Email de recuperação enviado"})
+
+
+@csrf_exempt
+def password_reset_confirm(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+
+    data = json.loads(request.body)
+    uid = data.get("uid")
+    token = data.get("token")
+    new_password = data.get("new_password")
+
+    if not uid or not token or not new_password:
+        return JsonResponse({"error": "Dados incompletos"}, status=400)
+
+    try:
+        user = User.objects.get(pk=uid)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Usuário não encontrado"}, status=404)
+
+    if not default_token_generator.check_token(user, token):
+        return JsonResponse({"error": "Token inválido ou expirado"}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+
+    return JsonResponse({"message": "Senha redefinida com sucesso"})
+
+ """
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -289,6 +614,10 @@ def password_reset_request(request):
         """
     }
     response = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+
+    print("STATUS:", response.status_code)
+    print("BODY:", response.text)
+    
     if response.status_code != 201 and response.status_code != 200:
         return JsonResponse({"error": "Falha ao enviar email", "details": response.json()}, status=500)
 

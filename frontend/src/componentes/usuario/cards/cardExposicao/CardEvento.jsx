@@ -4,23 +4,30 @@ import {IoCalendarClearOutline} from "react-icons/io5";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import api from "../../../service/api/api";
+import Skeleton from "../../../layout/motion/skeleton/skeleton";
+import Toast from "../../stylenotificacao/toast";
 
 function CardEventos()
 {
     const [eventos, setEventos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState({
-        open: false,
-        type: "success", // "success" ou "error"
-        message: "",
+    const [toast, setToast] = useState({
+        message:"",
+        type:null
     });
+    const isLoading = loading;
 
     const carregarEventos = async () => {
         try {
             const res = await api.get("/livros/eventos/");
             setEventos(res.data);
         } catch (error) {
-            alert("Erro na captura", error)
+            setToast({
+                message: "Erro na captura" + error,
+                type: "error",
+            });
+
+            console.log("Erro:", error);
         }
         setLoading(false);
     }
@@ -31,31 +38,44 @@ function CardEventos()
 
     const reservar = async (id) => {
         try {
-            await api.post(`/livros/gestao-eventos/${id}/reservar/`);
-            setModal({
-                open: true,
-                type: "success",
+            await api.post(`/livros/gestao-eventos/${id}/reservar/`); 
+            setToast({
                 message: "Evento reservado com sucesso!",
+                type: "success",
             });
+
+            await carregarEventos();
+            console.log("Evento reservado com sucesso!");
         } catch (error) {
             if (error.response?.data) {
                 const erros = Object.values(error.response.data)
                     .flat()
                     .join(" ");
 
-                setModal({
-                    open: true,
-                    type: "error",
+                setToast({
                     message: erros,
+                    type: "error",
                 });
+
+                console.log("Erro:", erros);
             } else {
-                alert("Erro ao comunicar com o servidor");
+                setToast({
+                    message: "Erro ao comunicar com o servidor",
+                    type: "error",
+                });
+
+                console.log("Erro ao comunicar com o servidor");
             }
         }
     }
 
-    if (loading) return <p>Carregando...</p>
-
+    if(eventos){
+        if (loading) {
+            return <Skeleton type="card" count={8} />;
+      }
+    }
+    
+    if (!eventos) return <p className="text-red-600 text-center mt-20">Nenhum evento encontrada.</p>;
 
     return(
         <motion.div initial={{ opacity: 0, y: 20 }}       // começa invisível e levemente abaixo
@@ -99,9 +119,19 @@ function CardEventos()
                         </div>
                     </div>
                 ))}
-            
-
-
+                
+                {/* 
+                =========================
+                            TOAST
+                ========================= 
+                */}
+                {toast && (
+                    <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                    />
+                )}
         </motion.div>
     );
 }

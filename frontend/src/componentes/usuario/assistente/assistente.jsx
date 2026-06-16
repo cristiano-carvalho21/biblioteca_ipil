@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaMicrophone, FaPaperPlane, FaBars } from "react-icons/fa";
+import {HiOutlineArrowRightEndOnRectangle} from "react-icons/hi2";
 import api from "../../service/api/api";
+import { useAuth } from "../../auth/userAuth/useauth";
 
 function Assistente() {
+
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [chats, setChats] = useState([]);
     const [chatAtual, setChatAtual] = useState(null);
@@ -16,49 +22,65 @@ function Assistente() {
         carregarChats();
     }, []);
 
-const carregarChats = async () => {
-    try {
-        const res = await api.get("/ai/chat/listar/");
+    // =========================
+    // 📚 CARREGAR CHATS
+    // =========================
+    const carregarChats = async () => {
+        try {
+            const res = await api.get("/ai/chat/listar/");
 
-        if (Array.isArray(res.data) && res.data.length > 0) {
-            const chatsFormatados = res.data.map(c => ({
-                id: c.id,
-                mensagens: []
-            }));
+            if (Array.isArray(res.data) && res.data.length > 0) {
+                const chatsFormatados = res.data.map(c => ({
+                    id: c.id,
+                    mensagens: [],
+                    titulo: "Nova conversa"
+                }));
 
-            setChats(chatsFormatados);
+                setChats(chatsFormatados);
 
-            const primeiro = chatsFormatados[0];
-            setChatAtual(primeiro.id);
+                const primeiro = chatsFormatados[0];
+                setChatAtual(primeiro.id);
 
-            await carregarMensagens(primeiro.id);
+                await carregarMensagens(primeiro.id);
 
-        } else {
-            await novoChat();
+            } else {
+                await novoChat();
+            }
+
+        } catch (err) {
+            console.log(err);
         }
+    };
 
-    } catch (err) {
-        console.log(err);
-    }
-};
-
+    // =========================
+    // 💬 CARREGAR MENSAGENS
+    // =========================
     const carregarMensagens = async (chatId) => {
-    try {
-        const res = await api.get(`/ai/chat/${chatId}/mensagens/`);
+        try {
+            const res = await api.get(`/ai/chat/${chatId}/mensagens/`);
 
-        setChats(prev =>
-            prev.map(chat =>
-                chat.id === chatId
-                    ? { ...chat, mensagens: res.data || [] }
-                    : chat
-            )
-        );
+            const mensagens = res.data || [];
 
-    } catch (err) {
-        console.log(err);
-    }
-};
+            const titulo =
+                mensagens.find(m => m.tipo === "user")?.texto?.slice(0, 30)
+                || "Nova conversa";
 
+            setChats(prev =>
+                prev.map(chat =>
+                    chat.id === chatId
+                        ? { ...chat, mensagens, titulo }
+                        : chat
+                )
+            );
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    // =========================
+    // 🔽 SCROLL AUTOMÁTICO
+    // =========================
     useEffect(() => {
         chatRef.current?.scrollTo({
             top: chatRef.current.scrollHeight,
@@ -69,31 +91,41 @@ const carregarChats = async () => {
     const mensagensAtuais =
         chats.find(c => c.id === chatAtual)?.mensagens || [];
 
+    // =========================
+    // ➕ NOVO CHAT
+    // =========================
     const novoChat = async () => {
-    try {
-        const res = await api.post("/ai/chat/criar/");
+        try {
+            const res = await api.post("/ai/chat/criar/");
 
-        const novo = {
-            id: res.data.chat_id,
-            mensagens: []
-        };
+            const novo = {
+                id: res.data.chat_id,
+                mensagens: [],
+                titulo: "Nova conversa"
+            };
 
-        setChats(prev => [novo, ...prev]);
-        setChatAtual(novo.id);
+            setChats(prev => [novo, ...prev]);
+            setChatAtual(novo.id);
 
-        setSidebarOpen(false);
+            setSidebarOpen(false);
 
-    } catch (err) {
-        console.log(err);
-    }
-};
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
+    // =========================
+    // 🔁 SELECIONAR CHAT
+    // =========================
     const selecionarChat = async (id) => {
         setChatAtual(id);
         setSidebarOpen(false);
         await carregarMensagens(id);
     };
 
+    // =========================
+    // ✍️ ANIMAÇÃO DE RESPOSTA
+    // =========================
     const escreverResposta = (texto) => {
         let i = 0;
         let resposta = "";
@@ -121,44 +153,59 @@ const carregarChats = async () => {
         }, 15);
     };
 
+    // =========================
+    // 📤 ENVIAR MENSAGEM
+    // =========================
     const enviarMensagem = async () => {
-    if (!mensagem.trim()) return;
+        if (!mensagem.trim()) return;
 
-    const texto = mensagem;
-    setMensagem("");
+        const texto = mensagem;
+        setMensagem("");
 
-    const novasMensagens = [
-        ...mensagensAtuais,
-        { tipo: "user", texto },
-        { tipo: "ia", texto: "" }
-    ];
+        const novasMensagens = [
+            ...mensagensAtuais,
+            { tipo: "user", texto },
+            { tipo: "ia", texto: "" }
+        ];
 
-    setChats(prev =>
-        prev.map(chat =>
-            chat.id === chatAtual
-                ? { ...chat, mensagens: novasMensagens }
-                : chat
-        )
-    );
+        setChats(prev =>
+            prev.map(chat => {
+                if (chat.id !== chatAtual) return chat;
 
-    setDigitando(true);
+                const novoTitulo =
+                    chat.titulo === "Nova conversa"
+                        ? texto.slice(0, 30)
+                        : chat.titulo;
 
-    try {
-        const res = await api.post("/ai/chat/enviar/", {
-            chat_id: chatAtual,
-            mensagem: texto
-        });
+                return {
+                    ...chat,
+                    mensagens: novasMensagens,
+                    titulo: novoTitulo
+                };
+            })
+        );
 
-        escreverResposta(res.data.resposta);
+        setDigitando(true);
 
-    } catch (err) {
-        console.log(err);
-        escreverResposta("Erro ao comunicar com o servidor");
-    }
+        try {
+            const res = await api.post("/ai/chat/enviar/", {
+                chat_id: chatAtual,
+                mensagem: texto
+            });
 
-    setDigitando(false);
-};
+            escreverResposta(res.data.resposta);
 
+        } catch (err) {
+            console.log(err);
+            escreverResposta("Erro ao comunicar com o servidor");
+        }
+
+        setDigitando(false);
+    };
+
+    // =========================
+    // 🎤 VOZ
+    // =========================
     const reconhecerVoz = () => {
         const SpeechRecognition =
             window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -178,9 +225,35 @@ const carregarChats = async () => {
         recognition.start();
     };
 
+
+// =========================
+// Captura de Usuário
+// =========================
+  const priv = user?.user || {};
+  const info = user?.dados_oficiais || {};
+  const nome = priv?.first_name || priv?.username || "Usuário";
+
+  // Subtítulo baseado em superuser ou grupos
+  let subtitulo = "";
+  if (priv?.is_superuser) {
+    subtitulo = "Super User";
+  } else if (Array.isArray(priv?.grupos) && priv.grupos.length > 0) {
+    subtitulo = priv.grupos.map(g => g?.nome || g).join(", ");
+  } else {
+    subtitulo = "Usuário";
+  }
+
+  const pageHome = () => {
+    navigate("/");
+  }
+
+    // =========================
+    // 🎨 UI
+    // =========================
     return (
         <div className="w-full h-screen flex bg-gray-100">
 
+            {/* SIDEBAR */}
             <div className={`fixed md:relative z-20 ${sidebarOpen ? "left-0" : "-left-64"} md:left-0 w-64 h-full bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300`}>
 
                 <button
@@ -191,26 +264,37 @@ const carregarChats = async () => {
                 </button>
 
                 <div className="flex-1 overflow-y-auto space-y-2">
-                    {chats.map(chat => {
-                        const titulo =
-                            chat.mensagens?.find(m => m.tipo === "user")?.texto?.slice(0, 30)
-                            || "Nova conversa";
+                    {chats.map(chat => (
+                        <div
+                            key={chat.id}
+                            onClick={() => selecionarChat(chat.id)}
+                            className={`p-2 rounded-lg cursor-pointer text-sm ${chatAtual === chat.id ? "bg-orange-100" : "hover:bg-gray-100"}`}
+                        >
+                            {chat.titulo || "Nova conversa"}
+                        </div>
+                    ))}
+                </div>
 
-                        return (
-                            <div
-                                key={chat.id}
-                                onClick={() => selecionarChat(chat.id)}
-                                className={`p-2 rounded-lg cursor-pointer text-sm ${chatAtual === chat.id ? "bg-orange-100" : "hover:bg-gray-100"}`}
-                            >
-                                {titulo}
-                            </div>
-                        );
-                    })}
+                <div className="flex-1"></div>
+                <div className="space-y-5 pb-4 text-center">
+                    {/* Nome e subtitulo */}
+                    <button className="w-full border border-[#000000]/10 font-semibold rounded-lg mb-4 py-1">
+                        <p className="text-orange-900 text-xs">{nome}</p>
+                        <p className="text-black text-xs">{subtitulo}</p>
+                    </button>
+                    <button
+                        onClick={pageHome}
+                        className="w-full bg-black/12 border border-[#000000]/10 flex items-center gap-2 justify-center rounded-lg py-3 cursor-pointer"
+                        >
+                        <HiOutlineArrowRightEndOnRectangle size={25} className="text-orange-500" /> Sair
+                    </button>
                 </div>
             </div>
 
+            {/* MAIN */}
             <div className="flex-1 flex flex-col">
 
+                {/* HEADER */}
                 <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center justify-between">
                     <button onClick={() => setSidebarOpen(true)} className="md:hidden">
                         <FaBars />
@@ -221,6 +305,7 @@ const carregarChats = async () => {
                     </span>
                 </div>
 
+                {/* CHAT */}
                 <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
 
                     {mensagensAtuais.map((msg, index) => (
@@ -233,16 +318,18 @@ const carregarChats = async () => {
                         </div>
                     ))}
 
+                    {/* LOADING PROFISSIONAL */}
                     {digitando && (
-                        <div className="flex items-end gap-1 h-6">
-                            <span className="dot"></span>
-                            <span className="dot"></span>
-                            <span className="dot"></span>
+                        <div className="flex items-center gap-1 px-4 py-2 bg-gray-200 rounded-2xl w-fit">
+                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
                         </div>
                     )}
 
                 </div>
 
+                {/* INPUT */}
                 <div className="border-t border-gray-200 bg-white flex justify-center items-center px-2 py-2">
 
                     <div className="w-full max-w-2xl flex items-center gap-2">

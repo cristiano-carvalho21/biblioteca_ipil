@@ -748,6 +748,7 @@ treinos = [
     ("numero de obras disponíveis", "livros_disponiveis_qtd"),
     ("qual é o total de obras disponíveis existente ", "livros_disponiveis_qtd"),
 
+    ("há livros", "livros_lista"),
     ("listar os livros", "livros_lista"),
     ("listar livros", "livros_lista"),
     ("quais são os livros", "livros_lista"),
@@ -1102,7 +1103,7 @@ treinos = [
     ("quais são os autores mais recentes", "autores_recentes"),
     ("quais os autores mais recentes", "autores_recentes"),
     ("os autores mais recentes", "autores_recentes"),
-    ("os autores mais recentes quais são", "livros_recentes"),
+    ("os autores mais recentes quais são", "autores_recentes"),
     ("autores mais recentes", "autores_recentes"),
     ("quais são os 4 autores recentes", "autores_recentes"),
     ("quais os 4 autores recentes", "autores_recentes"),
@@ -1205,9 +1206,97 @@ treinos = [
 
     ("livros de", "livros_categoria_x"),
     ("obras de", "livros_categoria_x"),
+    ("listar os livros de", "livros_categoria_x"),
+    ("listar livros de", "livros_categoria_x"),
+    ("quais são os livros de", "livros_categoria_x"),
+    ("quais os livros de", "livros_categoria_x"),
+    ("lista os livros de", "livros_categoria_x"),
+    ("lista livros de", "livros_categoria_x"),
+    ("liste os livros de", "livros_categoria_x"),
+    ("liste livros de", "livros_categoria_x"),
+    ("diz os livros de", "livros_categoria_x"),
+    ("selecione os livros de", "livros_categoria_x"),
+    ("selecione livros de", "livros_categoria_x"),
+    ("seleciona os livros de", "livros_categoria_x"),
+    ("seleciona livros de", "livros_categoria_x"),
+    ("apresenta os livros de", "livros_categoria_x"),
+    ("apresenta livros de", "livros_categoria_x"),
+    ("apresente os livros de", "livros_categoria_x"),
+    ("apresente livros de", "livros_categoria_x"),
+    ("renderize os livros de", "livros_categoria_x"),
+    ("renderize livros de", "livros_categoria_x"),
+    ("renderiza os livros de", "livros_categoria_x"),
+    ("renderiza livros de", "livros_categoria_x"),
+    ("quais são as obras de", "livros_categoria_x"),
+    ("quais as obras de", "livros_categoria_x"),
+    ("lista as obras de", "livros_categoria_x"),
+    ("lista obras de", "livros_categoria_x"),
+    ("liste as obras de", "livros_categoria_x"),
+    ("liste obras de", "livros_categoria_x"),
+    ("enumera obras de", "livros_categoria_x"),
+    ("enumera as obras de", "livros_categoria_x"),
+    ("enumere obras de", "livros_categoria_x"),
+    ("enumere as obras de", "livros_categoria_x"),
+    ("diz as obras de", "livros_categoria_x"),
+    ("selecione as obras de", "livros_categoria_x"),
+    ("selecione obras de", "livros_categoria_x"),
+    ("seleciona as obras de", "livros_categoria_x"),
+    ("seleciona obras de", "livros_categoria_x"),
+    ("apresenta as obras de", "livros_categoria_x"),
+    ("apresenta obras de", "livros_categoria_x"),
+    ("apresente as obras de", "livros_categoria_x"),
+    ("apresente obras de", "livros_categoria_x"),
+    ("renderize as obras de", "livros_categoria_x"),
+    ("renderize obras de", "livros_categoria_x"),
+    ("renderiza as obras de", "livros_categoria_x"),
+
 
     ("livros do", "livros_autor_x"),
     ("obras do", "livros_autor_x"),
+    ("listar os livros do", "livros_autor_x"),
+    ("listar livros do", "livros_autor_x"),
+    ("quais são os livros do", "livros_autor_x"),
+    ("quais os livros do", "livros_autor_x"),
+    ("lista os livros do", "livros_autor_x"),
+    ("lista livros do", "livros_autor_x"),
+    ("liste os livros do", "livros_autor_x"),
+    ("liste livros do", "livros_autor_x"),
+    ("diz os livros do", "livros_autor_x"),
+    ("selecione os livros do", "livros_autor_x"),
+    ("selecione livros do", "livros_autor_x"),
+    ("seleciona os livros do", "livros_autor_x"),
+    ("seleciona livros do", "livros_autor_x"),
+    ("apresenta os livros do", "livros_autor_x"),
+    ("apresenta livros do", "livros_autor_x"),
+    ("apresente os livros do", "livros_autor_x"),
+    ("apresente livros do", "livros_autor_x"),
+    ("renderize os livros do", "livros_autor_x"),
+    ("renderize livros do", "livros_autor_x"),
+    ("renderiza os livros do", "livros_autor_x"),
+    ("renderiza livros do", "livros_autor_x"),
+    ("quais são as obras do", "livros_autor_x"),
+    ("quais as obras do", "livros_autor_x"),
+    ("lista as obras do", "livros_autor_x"),
+    ("lista obras do", "livros_autor_x"),
+    ("liste as obras do", "livros_autor_x"),
+    ("liste obras do", "livros_autor_x"),
+    ("enumera obras do", "livros_autor_x"),
+    ("enumera as obras do", "livros_autor_x"),
+    ("enumere obras do", "livros_autor_x"),
+    ("enumere as obras do", "livros_autor_x"),
+    ("diz as obras do", "livros_autor_x"),
+    ("selecione as obras do", "livros_autor_x"),
+    ("selecione obras do", "livros_autor_x"),
+    ("seleciona as obras do", "livros_autor_x"),
+    ("seleciona obras do", "livros_autor_x"),
+    ("apresenta as obras do", "livros_autor_x"),
+    ("apresenta obras do", "livros_autor_x"),
+    ("apresente as obras do", "livros_autor_x"),
+    ("apresente obras do", "livros_autor_x"),
+    ("renderize as obras do", "livros_autor_x"),
+    ("renderize obras do", "livros_autor_x"),
+    ("renderiza as obras do", "livros_autor_x"),
+
 
     #News Intenções
     ("categoria com o livro mais recente","categoria_livro_recente"),
@@ -1334,6 +1423,7 @@ treinos = [
     ("obras menos selecionadas", "livros_menos_populares"),
     ("obras menos selecionadas quais são", "livros_menos_populares"),
 
+    ("há livro menos requisitado", "livro_menos_popular"),
     ("qual é o livro menos requisitado", "livro_menos_popular"),
     ("qual o livro menos requisitado", "livro_menos_popular"),
     ("qual livro menos requisitado", "livro_menos_popular"),
@@ -1389,6 +1479,7 @@ treinos = [
     ("apresente a obra menos selecionada", "livro_menos_popular"),
     ("apresenta a obra menos selecionada", "livro_menos_popular"),
 
+    ("há categorias com poucos livros", "categorias_poucas"),
     ("qual é a categorias com poucos livros", "categorias_poucas"),
     ("qual a categorias com poucos livros", "categorias_poucas"),
     ("qual categorias com poucos livros", "categorias_poucas"),
@@ -1407,6 +1498,7 @@ treinos = [
     ("mostre categorias com poucas obras", "categorias_poucas"),
     ("mostra categorias com poucas obras", "categorias_poucas"),
 
+    ("há autor com poucas obras", "autores_poucos"),
     ("qual é o autor com poucas obras", "autores_poucos"),
     ("qual o autor com poucas obras", "autores_poucos"),
     ("qual autor com poucas obras", "autores_poucos"),
@@ -1435,6 +1527,7 @@ treinos = [
     ("autor menos produtivos", "autores_poucos"),
     ("autor menos produtivos qual é", "autores_poucos"),
 
+    ("há  categorias", "categorias_lista"),
     ("listar as categorias", "categorias_lista"),
     ("listar categorias", "categorias_lista"),
     ("quais são as categorias", "categorias_lista"),
@@ -1469,6 +1562,7 @@ treinos = [
     ("total de categorias no acervo", "categorias_qtd"),
     ("qual é o total de categoria existente ", "categorias_qtd"),
 
+    ("há autores", "autores_lista"),
     ("listar autores", "autores_lista"),
     ("quais são os autores", "autores_lista"),
     (" quais são os autores", "autores_lista"),
@@ -1504,59 +1598,237 @@ treinos = [
     ("total autores na biblioteca", "autores_qtd"),
     ("qual é o total de autor existente ", "autores_qtd"),
 
-    ("quais", "followup"),
+    #Exposições
+    ("há exposições", "exposicoes_lista"),
+    ("listar as exposições", "exposicoes_lista"),
+    ("listar exposições", "exposicoes_lista"),
+    ("quais são as exposições", "exposicoes_lista"),
+    ("quais as exposições", "exposicoes_lista"),
+    ("lista as exposições", "exposicoes_lista"),
+    ("lista exposições", "exposicoes_lista"),
+    ("liste as exposições", "exposicoes_lista"),
+    ("liste exposições", "exposicoes_lista"),
+    ("diz as exposições", "exposicoes_lista"),
+    ("selecione as exposições", "exposicoes_lista"),
+    ("selecione exposições", "exposicoes_lista"),
+    ("seleciona as exposições", "exposicoes_lista"),
+    ("seleciona exposições", "exposicoes_lista"),
+    ("apresenta as exposições", "exposicoes_lista"),
+    ("apresenta exposições", "exposicoes_lista"),
+    ("apresente as exposições", "exposicoes_lista"),
+    ("apresente exposições", "exposicoes_lista"),
+    ("renderize as exposições", "exposicoes_lista"),
+    ("renderize exposições", "exposicoes_lista"),
+    ("renderiza as exposições", "exposicoes_lista"),
+    ("renderiza exposições", "exposicoes_lista"),
+
+    ("quantos exposições existem", "exposicoes_qtd"),
+    ("quantos exposições tem", "exposicoes_qtd"),
+    ("quantos exposições possui", "exposicoes_qtd"),
+    ("quantos exposições a biblioteca possui", "exposicoes_qtd"),
+    ("quantos exposições a biblioteca tem", "exposicoes_qtd"),
+    ("quantos exposições a biblioteca contém", "exposicoes_qtd"),
+    ("quantos exposições a biblioteca contem", "exposicoes_qtd"),
+    ("quantos exposições contém", "exposicoes_qtd"),
+    ("quantos exposições contem", "exposicoes_qtd"),
+    ("numero de exposições", "exposicoes_qtd"),
+    ("enumera as exposições", "exposicoes_qtd"),
+    ("enumera exposições", "exposicoes_qtd"),
+    ("enumere as exposições", "exposicoes_qtd"),
+    ("enumere exposições", "exposicoes_qtd"),
+    ("qual é o total de exposições no acervo", "exposicoes_qtd"),
+    ("qual é o total de exposições na biblioteca", "exposicoes_qtd"),
+    ("qual é o total de livro existente ", "exposicoes_qtd"),
+    ("exposições quantos existem", "exposicoes_qtd"),
+    ("exposições existem quantos", "exposicoes_qtd"),
+    ("exposições quantos tem", "exposicoes_qtd"),
+    ("exposições tem quantos", "exposicoes_qtd"),
+    ("exposições quantos possui", "exposicoes_qtd"),
+    ("exposições quantos possui", "exposicoes_qtd"),
+    ("exposições quantos a biblioteca possui", "exposicoes_qtd"),
+    ("exposições a biblioteca possui quantos", "exposicoes_qtd"),
+    ("exposições quantos a biblioteca tem", "exposicoes_qtd"),
+    ("exposições a biblioteca tem quantos", "exposicoes_qtd"),
+    ("exposições quantos a biblioteca contém", "exposicoes_qtd"),
+    ("exposições a biblioteca contém quantos", "exposicoes_qtd"),
+    ("exposições quantos a biblioteca contem", "exposicoes_qtd"),
+    ("exposições a biblioteca contem quantos", "exposicoes_qtd"),
+    ("exposições quantos contém", "exposicoes_qtd"),
+    ("exposições contém quantos", "exposicoes_qtd"),
+    ("exposições quantos contem", "exposicoes_qtd"),
+    ("exposições contem quantos", "exposicoes_qtd"),
+    ("exposições no acervo qual é o total", "exposicoes_qtd"),
+    ("exposições qual é o total no acervo", "exposicoes_qtd"),
+    ("exposições na biblioteca qual é o total", "exposicoes_qtd"),
+    ("exposições qual é o total na biblioteca", "exposicoes_qtd"),
+    ("exposição existente qual é o total", "exposicoes_qtd"),
+    ("exposição qual é o total existente", "exposicoes_qtd"),
+    ("exposições enumera-as", "exposicoes_qtd"),
+    ("exposições enumera", "exposicoes_qtd"),
+    ("exposições enumere-as", "exposicoes_qtd"),
+
+
+    #Eventos
+    ("há eventos", "eventos_lista"),
+    ("listar os eventos", "livros_lista"),
+    ("listar eventos", "eventos_lista"),
+    ("quais são os eventos", "eventos_lista"),
+    ("quais os eventos", "eventos_lista"),
+    ("lista os eventos", "eventos_lista"),
+    ("lista eventos", "eventos_lista"),
+    ("liste os eventos", "eventos_lista"),
+    ("liste eventos", "eventos_lista"),
+    ("diz os eventos", "eventos_lista"),
+    ("selecione os eventos", "eventos_lista"),
+    ("selecione eventos", "eventos_lista"),
+    ("seleciona os eventos", "eventos_lista"),
+    ("seleciona eventos", "eventos_lista"),
+    ("apresenta os eventos", "eventos_lista"),
+    ("apresenta eventos", "eventos_lista"),
+    ("apresente os eventos", "eventos_lista"),
+    ("apresente eventos", "eventos_lista"),
+    ("renderize os eventos", "eventos_lista"),
+    ("renderize eventos", "eventos_lista"),
+    ("renderiza os eventos", "eventos_lista"),
+    ("renderiza eventos", "eventos_lista"),
+
+    ("quantos eventos existem", "eventos_qtd"),
+    ("quantos eventos tem", "eventos_qtd"),
+    ("quantos eventos possui", "eventos_qtd"),
+    ("quantos eventos a biblioteca possui", "eventos_qtd"),
+    ("quantos eventos a biblioteca tem", "eventos_qtd"),
+    ("quantos eventos a biblioteca contém", "eventos_qtd"),
+    ("quantos eventos a biblioteca contem", "eventos_qtd"),
+    ("quantos eventos contém", "eventos_qtd"),
+    ("quantos eventos contem", "eventos_qtd"),
+    ("numero de eventos", "eventos_qtd"),
+    ("enumera os eventos", "eventos_qtd"),
+    ("enumera eventos", "eventos_qtd"),
+    ("enumere os eventos", "eventos_qtd"),
+    ("enumere eventos", "eventos_qtd"),
+    ("qual é o total de eventos no acervo", "eventos_qtd"),
+    ("qual é o total de eventos na biblioteca", "eventos_qtd"),
+    ("qual é o total de livro existente ", "eventos_qtd"),
+    ("eventos quantos existem", "eventos_qtd"),
+    ("eventos existem quantos", "eventos_qtd"),
+    ("eventos quantos tem", "eventos_qtd"),
+    ("eventos tem quantos", "eventos_qtd"),
+    ("eventos quantos possui", "eventos_qtd"),
+    ("eventos quantos possui", "eventos_qtd"),
+    ("eventos quantos a biblioteca possui", "eventos_qtd"),
+    ("eventos a biblioteca possui quantos", "eventos_qtd"),
+    ("eventos quantos a biblioteca tem", "eventos_qtd"),
+    ("exposições a biblioteca tem quantos", "eventos_qtd"),
+    ("eventos quantos a biblioteca contém", "eventos_qtd"),
+    ("eventos a biblioteca contém quantos", "eventos_qtd"),
+    ("eventos quantos a biblioteca contem", "eventos_qtd"),
+    ("eventos a biblioteca contem quantos", "eventos_qtd"),
+    ("eventos quantos contém", "eventos_qtd"),
+    ("eventos contém quantos", "eventos_qtd"),
+    ("eventos quantos contem", "eventos_qtd"),
+    ("eventos contem quantos", "eventos_qtd"),
+    ("eventos no acervo qual é o total", "eventos_qtd"),
+    ("eventos qual é o total no acervo", "eventos_qtd"),
+    ("eventos na biblioteca qual é o total", "eventos_qtd"),
+    ("eventos qual é o total na biblioteca", "eventos_qtd"),
+    ("evento existente qual é o total", "eventos_qtd"),
+    ("evento qual é o total existente", "eventos_qtd"),
+    ("eventos enumera-os", "eventos_qtd"),
+    ("eventos enumera", "eventos_qtd"),
+    ("eventos enumere-os", "eventos_qtd"),
+
+
+    #Regras de Emprestimos
+    ("regras de emprestimo", "regras_emprestimos"),
+    ("como funciona emprestimo", "regras_emprestimos"),
+    ("quantos livros posso pegar", "regras_emprestimos"),
+    ("limite de livros", "regras_emprestimos"),
+
+
+    #Multas
+    ("multa", "multas"), 
+    ("multas", "multas"), 
+    ("valor da multa", "multas"),
+    ("quanto custa atraso", "multas"), 
+    ("penalidade", "multas"),
+    ("quanto pago por atraso", "multas"),
+
+
+    #Reservas
+    ("quem pode reservar", "poder_reservar"),
+    ("quem pode fazer reserva", "poder_reservar"),
+    ("quem pode requisitar", "poder_reservar"),
+
+    ("posso reservar livro", "reserva"),
+    ("posso fazer reserva", "reserva"),
+    ("me é permitido reservar", "reserva"),
+    ("me é permitido reserva", "reserva"),
+    ("posso solicitar reserva", "reserva"),
+    ("posso reservar", "reserva"),
+
+
+    #Emprestimos
+    ("quem pode emprestar", "poder_emprestar"),
+    ("quem pode fazer emprestimo", "poder_emprestar"),
+
+    ("posso emprestar livro", "emprestimo"),
+    ("posso fazer emprestimo", "emprestimo"),
+    ("me é permitido emprestar", "emprestimo"),
+    ("me é permitido emprestimo", "emprestimo"),
+    ("posso solicitar emprestimos", "emprestimo"),
+    ("posso emprestar", "emprestimo"),
+
+
+    #Relatorios Alunos
+    ("relatório dos alunos oficiais", "relatorio_alunos"),
+    ("relatório dos alunos", "relatorio_alunos"),
+    ("relatório dos estudantes oficiais", "relatorio_alunos"),
+    ("relatório dos estudantes", "relatorio_alunos"),
+
+    
+    #Relatorios Funcionários
+    ("relatório dos funcionarios oficiais", "relatorio_funcionarios"),
+    ("relatório dos funcionarios", "relatorio_funcionarios"),
+
+
+    #Relatorios Reservas
+    ("relatório das reservas", "relatorio_reservas_ativos"),
+    ("relatório das reserva", "relatorio_reservas_ativos"),
+    ("relatório reservas", "relatorio_reservas_ativos"),
+    ("relatório reserva", "relatorio_reservas_ativos"),
+
+
+    #Relatorios Emprestimos
+    ("relatótio dos emprestimos", "relatorio_emprestimos_ativos"),
+    ("relatótio dos emprestimo", "relatorio_emprestimos_ativos"),
+    ("relatótio emprestimos", "relatorio_emprestimos_ativos"),
+    ("relatótio emprestimo", "relatorio_emprestimos_ativos"),
+    
+
+    #Flowups
     ("quais são", "followup"),
-    ("lista", "followup"),
-    ("liste", "followup"),
-    ("mostra", "followup"),
-    ("mostre", "followup"),
-    ("enumera", "followup"),
-    ("enumere", "followup"),
-    ("seleciona", "followup"),
-    ("selecione", "followup"),
-    ("indica", "followup"),
-    ("indique", "followup"),
-    ("e esses", "followup"),
-    ("e eles", "followup"),
-    ("e elas", "followup"),
-    ("e quais", "followup"),
-    ("qual é", "followup"),
-    ("e qual é", "followup"),
+    ("quais", "followup"),
     ("que são", "followup"),
     ("e são", "followup"),
-    ("e que é", "followup"),
-    ("que é", "followup"),
-    ("renderize", "followup"),
-    ("renderize-os", "followup"),
-    ("renderize-as", "followup"),
-    ("renderiza", "followup"),
-    ("renderiza-os", "followup"),
-    ("renderiza-as", "followup"),
-    ("lista-os", "followup"),
-    ("lista-as", "followup"),
-    ("liste-os", "followup"),
-    ("liste-as", "followup"),
-    ("mostra-os", "followup"),
-    ("mostra-as", "followup"),
-    ("mostre-os", "followup"),
-    ("mostre-as", "followup"),
-    ("enumera-os", "followup"),
-    ("enumera-as", "followup"),
-    ("enumere-os", "followup"),
-    ("enumere-as", "followup"),
-    ("seleciona-os", "followup"),
-    ("seleciona-as", "followup"),
-    ("selecione-os", "followup"),
-    ("selecione-as", "followup"),
-    ("indica-os", "followup"),
-    ("indica-as", "followup"),
-    ("indique-os", "followup"),
-    ("indique-as", "followup"),
+    ("e esses", "followup"),
+    ("e quais", "followup"),
+    ("e elas", "followup"),
+    ("e eles", "followup"),
 
-    ("horario", "horario"),
-    ("horário da biblioteca", "horario"),
-    ("qual é o horário da biblioteca", "horario"),
-    ("quando abre", "horario"),
+
+    ("quais sao os dias de atendimento", "dias_atendimento"),
+    ("que dias a biblioteca funciona", "dias_atendimento"),
+    ("em que dias abre", "dias_atendimento"),
+    ("dias de funcionamento", "dias_atendimento"),
+    ("quando abre", "dias_atendimento"),
+    ("quando funciona", "dias_atendimento"),
+
+    ("horario", "horario_atendimento"),
+    ("horário da biblioteca", "horario_atendimento"),
+    ("qual é o horário da biblioteca", "horario_atendimento"),
+    ("que horas a biblioteca funciona", "horario_atendimento"),
+    ("que horas a biblioteca abre", "horario_atendimento"),
+    
 ]
 
 
@@ -1574,7 +1846,6 @@ def normalizar(texto):
 def reduzir_repeticoes(texto):
     return re.sub(r"(.)\1{2,}", r"\1\1", texto)
 
-
 # =========================
 # 🧠 ML MODEL
 # =========================
@@ -1587,7 +1858,6 @@ X = vectorizer.fit_transform(texts)
 modelo = LinearSVC()
 modelo.fit(X, labels)
 
-
 # =========================
 # 🔥 FUZZY MATCH
 # =========================
@@ -1595,25 +1865,46 @@ vocab = [t[0] for t in treinos]
 
 
 def corrigir_com_fuzzy(texto):
+
     texto = normalizar(texto)
     texto = reduzir_repeticoes(texto)
 
-    resultado = process.extractOne(texto, vocab, scorer=fuzz.WRatio)
+    # NÃO aplicar fuzzy em frases grandes
+    if len(texto.split()) >= 2:
+        return texto
+
+    resultado = process.extractOne(
+        texto,
+        vocab,
+        scorer=fuzz.WRatio
+    )
 
     if not resultado:
         return texto
 
     melhor, score, _ = resultado
 
-    return melhor if score >= 75 else texto
+    return melhor if score >= 85 else texto
 
 
 # =========================
 # 🔮 PREVISÃO FINAL
 # =========================
 def prever(texto):
-    texto = corrigir_com_fuzzy(texto)
-    X = vectorizer.transform([texto])
-    return modelo.predict(X)[0]
 
-print("Modelo treinado com SUCESSO")
+    original = texto
+
+    texto = corrigir_com_fuzzy(texto)
+
+    print("🧠 ORIGINAL:", original)
+    print("🧠 FUZZY:", texto)
+
+    X = vectorizer.transform([texto])
+
+    pred = modelo.predict(X)[0]
+
+    print("🧠 PREVISÃO:", pred)
+
+    return pred
+
+print("✅ Modelo treinado com SUCESSO")

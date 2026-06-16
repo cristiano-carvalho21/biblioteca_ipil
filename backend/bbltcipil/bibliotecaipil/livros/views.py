@@ -3,18 +3,20 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError, ValidationError as DRFValidationError
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .models import Categoria, Autor, Livro, Reserva, Emprestimo, Notificacao, Exposicao, Evento, Participacao
+from .models import Categoria, Autor, Livro, Reserva, Emprestimo, Notificacao, Exposicao, Reserva_Exposicao
+from administracao.models import ConfiguracaoSistema
 from .serializers import (
-    CategoriaSerializer, AutorSerializer, LivroSerializer, ReservaSerializer, EmprestimoSerializer, 
-    NotificacaoSerializer, ExposicaoSerializer, EventoSerializer, ParticipacaoSerializer
+    CategoriaSerializer, AutorSerializer, LivroSerializer, ReservaSerializer, EmprestimoSerializer, NotificacaoSerializer, 
+    ExposicaoSerializer, ExposicaoReservadaSerializer, ConfiguracaoSistemaSerializer
 )
-from .service import criar_reserva, cancelar_reserva, reservar_exposicao, reservar_evento, cancelar_participacao
+from .service import criar_reserva, cancelar_reserva
 User = get_user_model()
 from bibliotecaipil.events import emit_event
 from django.utils import timezone
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 # ==============================
 # BASE VIEWSET (SEGURANÇA)
@@ -96,12 +98,16 @@ class ReservaViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Reserva.objects.filter(usuario=self.request.user)
 
+
     def create(self, request, *args, **kwargs):
 
         livro_id = request.data.get("livro")
 
         if not livro_id:
-            return Response({"erro": "Livro é obrigatório"}, status=400)
+            return Response({
+                "erro": "campo_obrigatorio",
+                "mensagem": "Livro é obrigatório"
+            }, status=400)
 
         try:
             livro = Livro.objects.get(id=livro_id)
@@ -116,27 +122,47 @@ class ReservaViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Livro.DoesNotExist:
-            return Response({"erro": "Livro não encontrado"}, status=404)
+            return Response({
+                "erro": "livro_nao_encontrado",
+                "mensagem": "Livro não encontrado"
+            }, status=404)
 
-        except ValidationError as e:
-            return Response({"erro": e.messages}, status=400)
+        except (DRFValidationError, DjangoValidationError) as e:
 
-    def update(self, request, *args, **kwargs):
-        raise PermissionDenied("Usuário não pode editar reservas.")
+            # 🔥 aqui está a chave
+            detail = e.detail if hasattr(e, "detail") else e.messages
 
-    def partial_update(self, request, *args, **kwargs):
-        raise PermissionDenied("Usuário não pode editar reservas.")
+            # normalizar resposta
+            if isinstance(detail, dict):
+                data = detail
+            elif isinstance(detail, list):
+                data = {
+                    "erro": "validacao",
+                    "mensagem": detail[0]
+                }
+            else:
+                data = {
+                    "erro": "validacao",
+                    "mensagem": str(detail)
+                }
 
-    def destroy(self, request, *args, **kwargs):
-
-        reserva = self.get_object()
-
-        cancelar_reserva(reserva, request.user)
-
-        return Response({"mensagem": "Reserva cancelada com sucesso"})
-    
+            return Response(data, status=400)
 
 
+        def update(self, request, *args, **kwargs):
+            raise PermissionDenied("Usuário não pode editar reservas.")
+
+        def partial_update(self, request, *args, **kwargs):
+            raise PermissionDenied("Usuário não pode editar reservas.")
+
+        def destroy(self, request, *args, **kwargs):
+
+            reserva = self.get_object()
+
+            cancelar_reserva(reserva, request.user)
+
+            return Response({"mensagem": "Reserva cancelada com sucesso"})
+        
 
 # ==============================
 # EMPRÉSTIMOS (READ ONLY)
@@ -147,6 +173,25 @@ class EmprestimoViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Emprestimo.objects.filter(reserva__usuario=self.request.user)
+
+
+# -----------------------------
+# CONFIGURAÇÕES DO SISTEMA
+# -----------------------------
+class ConfiguracaoSistemaViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ConfiguracaoSistema.objects.all()
+    serializer_class = ConfiguracaoSistemaSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_object(self):
+        obj, created = ConfiguracaoSistema.objects.get_or_create(id=1)
+        return obj
+
+    def list(self, request):
+        config = self.get_object()
+        serializer = ConfiguracaoSistemaSerializer(config)
+        return Response(serializer.data)
 
 
 # ==============================
@@ -174,64 +219,97 @@ class NotificacaoViewSet(viewsets.ModelViewSet):
 
         return Response({"status": "ok"})
 
-
 class ExposicaoViewSet(viewsets.ModelViewSet):
     queryset = Exposicao.objects.all().order_by('-data_inicio')
     serializer_class = ExposicaoSerializer
     permission_classes = [IsAuthenticated]
 
+    # ==========================
+    # 🔹 RESERVAR
+    # ==========================
     @action(detail=True, methods=['post'])
     def reservar(self, request, pk=None):
+
         exposicao = self.get_object()
+
+        if exposicao.vagas_disponiveis() <= 0:
+            return Response(
+                {"erro": "Não existem vagas disponíveis."},
+                status=400
+            )
 
         try:
-            participacao = reservar_exposicao(request.user, exposicao.id)
-            serializer = ParticipacaoSerializer(participacao)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+            reserva = Reserva_Exposicao.objects.create(
+                usuario=request.user,
+                exposicao=exposicao
+            )
+
+            serializer = ExposicaoReservadaSerializer(
+                reserva
+            )
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
         except ValidationError as e:
+
             return Response(
                 {"erro": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                status=400
             )
-
-        except Exception as e:
-            return Response(
-                {"erro": "Erro interno", "detalhe": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
+    
+    # ==========================
+    # 🔹 CANCELAR RESERVA
+    # ==========================
     @action(detail=True, methods=['post'])
     def cancelar_reserva(self, request, pk=None):
+
         exposicao = self.get_object()
 
-        participacao = Participacao.objects.filter(
+        reserva = Reserva_Exposicao.objects.filter(
             usuario=request.user,
             exposicao=exposicao
         ).first()
 
-        if not participacao:
+        if not reserva:
             return Response(
-                {"erro": "Participação não encontrada."},
-                status=status.HTTP_404_NOT_FOUND
+                {"erro": "Reserva não encontrada."},
+                status=404
             )
-        
+
         try:
-            cancelar_participacao(participacao, request.user)
+            reserva.cancelar()
 
             return Response(
                 {"mensagem": "Reserva cancelada com sucesso."},
-                status=status.HTTP_200_OK
+                status=200
             )
-        
-        except ValidationError as e:
-            return Response(
-                {"erro": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )        
 
-class EventoViewSet(viewsets.ModelViewSet):
+        except ValidationError as e:
+            return Response({"erro": str(e)}, status=400)
+
+    # ==========================
+    # 🔹 PARTICIPAÇÕES (NOVO)
+    # ==========================
+    @action(detail=True, methods=['get'])
+    def participacoes(self, request, pk=None):
+
+        exposicao = self.get_object()
+
+        reservas = Reserva_Exposicao.objects.filter(
+            exposicao=exposicao,
+            estado="Participado"
+        ).select_related('usuario')
+
+        serializer = ExposicaoReservadaSerializer(reservas, many=True)
+
+        return Response(serializer.data)
+
+
+""" class EventoViewSet(viewsets.ModelViewSet):
     queryset = Evento.objects.all().order_by('-data')
     serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
@@ -280,20 +358,8 @@ class EventoViewSet(viewsets.ModelViewSet):
             return Response(
                 {"erro": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
-            )
+            ) """
 
-
-class ParticipacaoViewSet(viewsets.ModelViewSet):  # 👈 mudou aqui
-    serializer_class = ParticipacaoSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Participacao.objects.filter(
-            usuario=self.request.user
-        ).order_by('-data_registro')
-
-    def perform_create(self, serializer):
-        serializer.save()
 
 
 class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):
@@ -315,10 +381,31 @@ class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):
         if incluir_passadas != 'true':
             queryset = queryset.filter(data_fim__gte=timezone.now())
 
-        return queryset
+        return queryset 
+
+""" class ExposicaoListViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Exposicao.objects.all().order_by('-data_inicio')
+    serializer_class = ExposicaoSerializer
+    permission_classes = [IsAuthenticated]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    search_fields = ['titulo', 'descricao']
+
+    ordering_fields = ['data_inicio', 'data_fim']  # ✔ corrigido typo
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        incluir_passadas = self.request.query_params.get('historico')
+
+        if incluir_passadas != 'true':
+            queryset = queryset.filter(data_fim__gte=timezone.now())
+
+        return queryset """
     
 
-class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
+""" class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Evento.objects.all().order_by('-data')
     serializer_class = EventoSerializer
 
@@ -337,24 +424,204 @@ class EventoListViewSet(viewsets.ReadOnlyModelViewSet):
         if incluir_passadas != 'true':
             queryset = queryset.filter(data__gte=timezone.now())
 
-        return queryset
+        return queryset """
 
 
 class MinhasExposicoesViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ParticipacaoSerializer
+
+    serializer_class = ExposicaoSerializer
+
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Participacao.objects.filter(
-            usuario=self.request.user
-        ).select_related('exposicao').order_by('-data_registro')
+
+        return (
+            Exposicao.objects
+            .filter(
+                reservas__usuario=self.request.user
+            )
+            .exclude(
+                reservas__estado='Cancelado'
+            )
+            .prefetch_related(
+                'reservas'
+            )
+            .distinct()
+            .order_by('-data_inicio')
+        )
     
 
-class MeusEventosViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ParticipacaoSerializer
+""" class MeusEventosViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Participacao.objects.filter(
-            usuario=self.request.user
-        ).select_related('evento').order_by('-data_registro')
+        return Evento.objects.filter(
+            participacoes__usuario=self.request.user
+        ).distinct().order_by('-data') """
+    
+
+""" class ExposicaoReservadaViewsSet(viewsets.ModelViewSet):
+
+    serializer_class = ExposicaoReservadaSerializer
+
+    def get_queryset(self):
+
+        return Reserva_Exposicao.objects.select_related(
+            'usuario',
+            'exposicao'
+        ).prefetch_related(
+            'usuario__groups',
+            'exposicao__reservas'
+        )
+
+    # ==========================
+    # 🔹 APROVAR (ADMIN)
+    # ==========================
+    @action(detail=True, methods=['post'])
+    def aprovar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        if reserva.estado != "Reservado":
+            return Response({"message": "Só reservas pendentes podem ser aprovadas"})
+
+        reserva.estado = "Aprovado"
+        reserva.save()
+
+        return Response({"message": "Reserva aprovada"})
+
+    # ==========================
+    # 🔹 PARTICIPAR (CHECK-IN)
+    # ==========================
+    @action(detail=True, methods=['post'])
+    def participar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        if reserva.estado != "Aprovado":
+            return Response({"message": "Só reservas aprovadas podem participar"})
+
+        reserva.estado = "Participado"
+        reserva.data_participacao = timezone.now()
+        reserva.save()
+
+        return Response({"message": "Participação registada"})
+
+    # ==========================
+    # 🔹 CANCELAR
+    # ==========================
+    @action(detail=True, methods=['post'])
+    def cancelar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        if reserva.estado == "Participado":
+            return Response({"message": "Não pode cancelar após participação"})
+
+        reserva.estado = "Cancelado"
+        reserva.save()
+
+        return Response({"message": "Cancelado com sucesso"})
+ """
+
+class ExposicaoReservadaViewsSet(viewsets.ModelViewSet):
+
+    serializer_class = ExposicaoReservadaSerializer
+
+    # ==========================
+    # 🔹 QUERYSET
+    # ==========================
+
+    def get_queryset(self):
+
+        return Reserva_Exposicao.objects.select_related(
+            'usuario',
+            'exposicao'
+        ).prefetch_related(
+            'usuario__groups',
+            'exposicao__reservas'
+        )
+
+    # ==========================
+    # 🔹 APROVAR (ADMIN)
+    # ==========================
+
+    @action(detail=True, methods=['post'])
+    def aprovar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        try:
+
+            reserva.marcar_aprovado()
+
+            return Response({
+                "message": "Reserva aprovada com sucesso."
+            })
+
+        except ValidationError as e:
+
+            return Response({
+                "message": str(e)
+            }, status=400)
+
+    # ==========================
+    # 🔹 PARTICIPAR (CHECK-IN)
+    # ==========================
+
+    @action(detail=True, methods=['post'])
+    def participar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        try:
+
+            reserva.marcar_participado()
+
+            return Response({
+                "message": "Participação registada com sucesso."
+            })
+
+        except ValidationError as e:
+
+            return Response({
+                "message": str(e)
+            }, status=400)
+
+    # ==========================
+    # 🔹 CANCELAR
+    # ==========================
+
+    @action(detail=True, methods=['post'])
+    def cancelar(self, request, pk=None):
+
+        reserva = self.get_object()
+
+        try:
+
+            reserva.cancelar()
+
+            return Response({
+                "message": "Reserva cancelada com sucesso."
+            })
+
+        except ValidationError as e:
+
+            return Response({
+                "message": str(e)
+            }, status=400)
+
+
+""" class EventoReservadoViewsSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Exposicao.objects.all()
+    serializer_class = EventoReservadoSerializer
+
+    @action(detail=False, methods=['get'], url_path='reservados')
+    def reservados(self, request):
+        eventos = self.get_queryset().filter(
+            estado = 'Reservado'
+        ).prefetch_related('reservas__usuario').distinct()
+
+        serializer = self.get_serializer(eventos, many=True)
+        return Response(serializer.data) """
